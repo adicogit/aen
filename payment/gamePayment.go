@@ -3,30 +3,37 @@ package payment
 import (
 	"errors"
 	"time"
+
+	"aen.it/poolmanager/warehouse"
+	"github.com/google/uuid"
 )
 
 type GamePayment struct {
-	configuraiton    PaymentConfiguration
+	id               string
+	configuration    PaymentConfiguration
 	status           PaymentStatus
 	start            time.Time
 	previousDuration time.Duration
 	check            Check
+	itemList         []warehouse.Item
 }
 
 // New function initialize GamePayment passing a PaymentConfiguration
 func New(config PaymentConfiguration) GamePayment {
 	return GamePayment{
-		configuraiton:    config,
+		id:               uuid.New().String(),
+		configuration:    config,
 		status:           Stopped,
 		start:            time.Time{},
 		previousDuration: time.Duration(0),
 		check:            Check{},
+		itemList:         make([]warehouse.Item, 0),
 	}
 }
 
 // Set the confguration for the payment system
 func (gp *GamePayment) ConfigurePayment(config PaymentConfiguration) {
-	gp.configuraiton = config
+	gp.configuration = config
 }
 
 // Start new payment by starting counting the time. It returns an error if the payment is neither in a stopped nor in suspended status
@@ -40,6 +47,7 @@ func (gp *GamePayment) StartCountingPayment() error {
 	gp.start = time.Now()
 	gp.status = Started
 	gp.check = Check{}
+	gp.itemList = make([]warehouse.Item, 0)
 
 	return nil
 }
@@ -55,12 +63,18 @@ func (gp *GamePayment) ClosePayment() error {
 	if gp.status == Started {
 		duration += time.Since(gp.start)
 	}
-	if duration.Minutes() < float64(gp.configuraiton.MinimumDuration) {
-		duration = time.Duration(float64(gp.configuraiton.MinimumDuration) * float64(time.Minute))
+	if duration.Minutes() < float64(gp.configuration.MinimumDuration) {
+		duration = time.Duration(float64(gp.configuration.MinimumDuration) * float64(time.Minute))
 	}
+
 	gp.check = Check{
 		Duration: int(duration.Minutes()),
-		Price:    float32(duration.Minutes()) * float32(gp.configuraiton.CostPerHour) / 60,
+		Price:    int(duration.Minutes()) * gp.configuration.CostPerHour / 60,
+		ItemList: make([]warehouse.Item, len(gp.itemList)),
+	}
+	copy(gp.check.ItemList, gp.itemList)
+	for _, item := range gp.check.ItemList {
+		gp.check.Price += item.PublicPrice
 	}
 	gp.status = Stopped
 
@@ -91,4 +105,14 @@ func (gp *GamePayment) GetCheck() (Check, error) {
 // Return the payment status
 func (gp *GamePayment) GetPaymentStatus() PaymentStatus {
 	return gp.status
+}
+
+// Add a consumprion to current payment. If payment is n stoppes status it reruns error
+func (gp *GamePayment) AddConsumption(item warehouse.Item) error {
+	if gp.status == Stopped {
+		err := errors.New("can not add new consumption to closed payment")
+		return err
+	}
+	gp.itemList = append(gp.itemList, item)
+	return nil
 }

@@ -3,6 +3,8 @@ package payment
 import (
 	"testing"
 	"time"
+
+	"aen.it/poolmanager/warehouse"
 )
 
 // TestGamePaymentInitialization verify that New function works as expected
@@ -13,12 +15,12 @@ func TestGamePaymentInitialization(t *testing.T) {
 	}
 	gamePayment := New(config)
 	// Verify MinimumDuration
-	if gamePayment.configuraiton.MinimumDuration != config.MinimumDuration {
-		t.Errorf("GamePayment initialization FAILED. Its MinimumDuration value is %d but it should be %d", gamePayment.configuraiton.MinimumDuration, config.MinimumDuration)
+	if gamePayment.configuration.MinimumDuration != config.MinimumDuration {
+		t.Errorf("GamePayment initialization FAILED. Its MinimumDuration value is %d but it should be %d", gamePayment.configuration.MinimumDuration, config.MinimumDuration)
 	}
 	// Verify CostPerHour
-	if gamePayment.configuraiton.CostPerHour != config.CostPerHour {
-		t.Errorf("GamePayment initialization FAILED. Its CostPerHour value is %d but it should be %d", gamePayment.configuraiton.CostPerHour, config.CostPerHour)
+	if gamePayment.configuration.CostPerHour != config.CostPerHour {
+		t.Errorf("GamePayment initialization FAILED. Its CostPerHour value is %d but it should be %d", gamePayment.configuration.CostPerHour, config.CostPerHour)
 	}
 	// Verify start
 	zeroTime := time.Time{}
@@ -100,10 +102,24 @@ func TestGamePaymentClosure(t *testing.T) {
 	if err != nil {
 		t.Errorf("GamePayment StartCountingPayment FAILED. Trying to start new game returned an error %s but it should be OK", err)
 	}
+	item := warehouse.Item{
+		ID:            "",
+		Name:          "acqua",
+		PublicPrice:   50,
+		IncomingPrice: 10,
+	}
+	err = gamePayment.AddConsumption(item)
+	if err != nil {
+		t.Errorf("GamePayment AddConsumption FAILED. Returned error %s rying to add new consumption to a started payment, but it should be OK", err)
+	}
 	gamePayment.start = time.Now().Add(-10 * time.Minute)
 	err = gamePayment.PauseCountingPayment()
 	if err != nil {
 		t.Errorf("GamePayment PauseCountingPayment FAILED. Trying to pause a started returned an error %s but it should be OK", err)
+	}
+	err = gamePayment.AddConsumption(item)
+	if err != nil {
+		t.Errorf("GamePayment AddConsumption FAILED. Returned error %s rying to add new consumption to a started payment, but it should be OK", err)
 	}
 	// verify payment without pause and with less than minimum duration
 	err = gamePayment.ClosePayment()
@@ -114,6 +130,10 @@ func TestGamePaymentClosure(t *testing.T) {
 	if status != Stopped {
 		t.Errorf("GamePayment ClosePayment FAILED. Expecting status %d but it is %d", Stopped, status)
 	}
+	err = gamePayment.AddConsumption(item)
+	if err == nil {
+		t.Errorf("GamePayment AddConsumption FAILED. Did not return any error, but it should. you cannot add new consumption to a stopped payment")
+	}
 	check, err := gamePayment.GetCheck()
 	if err != nil {
 		t.Errorf("GamePayment ClosePayment FAILED. Closing the game should not generate an error in getting the check")
@@ -121,9 +141,10 @@ func TestGamePaymentClosure(t *testing.T) {
 	if check.Duration != config.MinimumDuration {
 		t.Errorf("GamePayment GetCheck FAILED. Check's duration is %d but it is expeted to be %d", check.Duration, config.MinimumDuration)
 	}
-	expectedPrice := float32(config.MinimumDuration) * float32(config.CostPerHour) / 60
+	expectedPrice := config.MinimumDuration * config.CostPerHour / 60
+	expectedPrice += item.PublicPrice * 2
 	if check.Price != expectedPrice {
-		t.Errorf("GamePayment GetCheck FAILED. Check's price is %.2f but it is expeted to be %.2f", check.Price, expectedPrice)
+		t.Errorf("GamePayment GetCheck FAILED. Check's price is %.2f but it is expeted to be %.2f", float32(check.Price/100), float32(expectedPrice/100))
 	}
 	err = gamePayment.ClosePayment()
 	if err == nil {
@@ -161,9 +182,9 @@ func TestGamePaymentClosure(t *testing.T) {
 	if check.Duration != 25 {
 		t.Errorf("GamePayment GetCheck FAILED. Check's duration is %d but it is expeted to be %d", check.Duration, 25)
 	}
-	expectedPrice = float32(25) * float32(config.CostPerHour) / 60
+	expectedPrice = 25 * config.CostPerHour / 60
 	if check.Price != expectedPrice {
-		t.Errorf("GamePayment GetCheck FAILED. Check's price is %.2f but it is expeted to be %.2f", check.Price, expectedPrice)
+		t.Errorf("GamePayment GetCheck FAILED. Check's price is %.2f but it is expeted to be %.2f", float32(check.Price), float32(expectedPrice))
 	}
 	err = gamePayment.ClosePayment()
 	if err == nil {

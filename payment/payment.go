@@ -1,5 +1,7 @@
 package payment
 
+import "aen.it/poolmanager/warehouse"
+
 // Represents the payment status
 type PaymentStatus int
 
@@ -23,7 +25,9 @@ type Check struct {
 	// Duration for the current check
 	Duration int
 	// Price for the current check
-	Price float32
+	Price int
+	// List of cosnumed items
+	ItemList []warehouse.Item
 }
 
 // Payment interface
@@ -40,4 +44,6 @@ type Payment interface {
 	GetCheck() (Check, error)
 	// Return the payment status
 	GetPaymentStatus() PaymentStatus
+	// Add a consumprion to current payment. If payment is n stoppes status it reruns error
+	AddConsumption(item warehouse.Item) error
 }
