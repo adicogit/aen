@@ -1,11 +1,18 @@
 package payment
 
 import (
+	"log/slog"
 	"testing"
 	"time"
 
+	"aen.it/poolmanager/log"
 	"aen.it/poolmanager/warehouse"
 )
+
+func init() {
+	//	log.SetLogLevel(slog.LevelDebug)
+	log.SetLogLevel(slog.LevelInfo)
+}
 
 // TestGamePaymentInitialization verify that New function works as expected
 func TestGamePaymentInitialization(t *testing.T) {
