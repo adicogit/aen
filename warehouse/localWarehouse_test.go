@@ -1,10 +1,16 @@
 package warehouse
 
 import (
+	"log/slog"
 	"testing"
 
+	"aen.it/poolmanager/log"
 	"github.com/google/uuid"
 )
+
+func init() {
+	log.SetLogLevel(slog.LevelDebug)
+}
 
 // TestLocalWarehouseInitialization verify that New function works as expected
 func TestLocalWarehouseInitialization(t *testing.T) {

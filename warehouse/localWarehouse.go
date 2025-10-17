@@ -40,13 +40,13 @@ func (lw *LocalWahouse) RemoveItems(itemID string, quantity int) error {
 	log.Log.Debug("Entering RemoveItems")
 	existingItem, ok := lw.warehouse[itemID]
 	if !ok {
-		err := fmt.Errorf("There are no items with specified ID: %s", itemID)
+		err := fmt.Errorf("there are no items with specified ID: %s", itemID)
 		log.Log.Error(err.Error())
 		log.Log.Debug("Exiting RemoveItems")
 		return err
 	}
 	if existingItem.Quantity < quantity {
-		err := fmt.Errorf("There are not enough items. %d is bigger than available quantity %d", quantity, existingItem.Quantity)
+		err := fmt.Errorf("there are not enough items. %d is bigger than available quantity %d", quantity, existingItem.Quantity)
 		log.Log.Error(err.Error())
 		log.Log.Debug("Exiting RemoveItems")
 		return err
@@ -92,7 +92,7 @@ func (lw *LocalWahouse) GetItem(itemID string) (Item, error) {
 	log.Log.Debug("Entering GetItem")
 	existingItem, ok := lw.warehouse[itemID]
 	if !ok {
-		return Item{}, fmt.Errorf("There are no items with specified ID: %s", itemID)
+		return Item{}, fmt.Errorf("there are no items with specified ID: %s", itemID)
 	}
 	log.Log.Debug("Exiting GetItem")
 	return existingItem.Item, nil
