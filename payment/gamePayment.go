@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"aen.it/poolmanager/config"
 	"aen.it/poolmanager/log"
 	"aen.it/poolmanager/warehouse"
 	"github.com/google/uuid"
@@ -11,7 +12,7 @@ import (
 
 type GamePayment struct {
 	id               string
-	configuration    PaymentConfiguration
+	configuration    config.PaymentConfiguration
 	status           PaymentStatus
 	start            time.Time
 	previousDuration time.Duration
@@ -20,7 +21,7 @@ type GamePayment struct {
 }
 
 // New function initialize GamePayment passing a PaymentConfiguration
-func New(config PaymentConfiguration) GamePayment {
+func New(config config.PaymentConfiguration) GamePayment {
 	log.Log.Debug("Entering New for GamePayment")
 	log.Log.Debug("Exiting  New for GamePayment")
 	return GamePayment{
@@ -35,7 +36,7 @@ func New(config PaymentConfiguration) GamePayment {
 }
 
 // Set the confguration for the payment system
-func (gp *GamePayment) ConfigurePayment(config PaymentConfiguration) {
+func (gp *GamePayment) ConfigurePayment(config config.PaymentConfiguration) {
 	log.Log.Debug("Entering ConfigurePayment")
 	gp.configuration = config
 	log.Log.Debug("Entering ConfigurePayment")

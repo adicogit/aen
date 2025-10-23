@@ -1,6 +1,9 @@
 package payment
 
-import "aen.it/poolmanager/warehouse"
+import (
+	"aen.it/poolmanager/config"
+	"aen.it/poolmanager/warehouse"
+)
 
 // Represents the payment status
 type PaymentStatus int
@@ -11,14 +14,6 @@ const (
 	Stopped
 	Suspended
 )
-
-// Define the payment configuration
-type PaymentConfiguration struct {
-	// Specify minimum duration to be payed
-	MinimumDuration int `json:"minimumDuration"`
-	// Specify cost for any hour
-	CostPerHour int `json:"costPerHour"`
-}
 
 // define information for the Check related to current payment
 type Check struct {
@@ -33,7 +28,7 @@ type Check struct {
 // Payment interface
 type Payment interface {
 	// Set the confguration for the payment system
-	ConfigurePayment(config PaymentConfiguration)
+	ConfigurePayment(config config.PaymentConfiguration)
 	// Start new payment by starting counting the time. It returns an error if the payment is neither in a stopped nor in suspended status
 	StartCountingPayment() error
 	// Stop current payment and calculate the billing. It returns an error if the payment is neither in a started nor in suspended status

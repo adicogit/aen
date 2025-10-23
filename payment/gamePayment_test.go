@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"aen.it/poolmanager/config"
 	"aen.it/poolmanager/log"
 	"aen.it/poolmanager/warehouse"
 )
@@ -16,7 +17,7 @@ func init() {
 
 // TestGamePaymentInitialization verify that New function works as expected
 func TestGamePaymentInitialization(t *testing.T) {
-	config := PaymentConfiguration{
+	config := config.PaymentConfiguration{
 		MinimumDuration: 30,
 		CostPerHour:     10,
 	}
@@ -43,7 +44,7 @@ func TestGamePaymentInitialization(t *testing.T) {
 
 // TestGamePaymentStart verify start function works as expected
 func TestGamePaymentStart(t *testing.T) {
-	config := PaymentConfiguration{
+	config := config.PaymentConfiguration{
 		MinimumDuration: 30,
 		CostPerHour:     10,
 	}
@@ -68,7 +69,7 @@ func TestGamePaymentStart(t *testing.T) {
 
 // TestGamePaymentPause verify pause works as expected
 func TestGamePaymentPause(t *testing.T) {
-	config := PaymentConfiguration{
+	config := config.PaymentConfiguration{
 		MinimumDuration: 0,
 		CostPerHour:     10,
 	}
@@ -100,7 +101,7 @@ func TestGamePaymentPause(t *testing.T) {
 
 // TestGamePaymentPause verify pause works as expected
 func TestGamePaymentClosure(t *testing.T) {
-	config := PaymentConfiguration{
+	config := config.PaymentConfiguration{
 		MinimumDuration: 15,
 		CostPerHour:     10,
 	}
