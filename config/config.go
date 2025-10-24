@@ -17,9 +17,19 @@ type GameStationConfiguraiton struct {
 	Payment PaymentConfiguration `json:"payment"`
 }
 
+// Define the item configuraiton
+type ItemConfiguraiton struct {
+	Name          string `json:"name"`
+	ID            string `json:"id"`
+	PublicPrice   int    `json:"publicPrice"`
+	IncomingPrice int    `json:"incomingPrice"`
+}
+
 type configInfo struct {
 	DefaultPayment PaymentConfiguration       `json:"defaultPayment"`
 	GamingStations []GameStationConfiguraiton `json:"gamingStations"`
+	Items          []ItemConfiguraiton        `json:"items"`
+	Name           string
 }
 
 var Config *configInfo
@@ -39,6 +49,7 @@ func loadConfig(configPath string, config *configInfo) {
 	if len(configPath) == 0 {
 		log.Log.Info("Used empty config path")
 	}
+	config.Name = "Prova"
 	defaultPayment := PaymentConfiguration{
 		CostPerHour:     500,
 		MinimumDuration: 30,
@@ -51,6 +62,15 @@ func loadConfig(configPath string, config *configInfo) {
 	currentGamingStation.ID = "1"
 	currentGamingStation.Payment = defaultPayment
 	config.GamingStations[0] = currentGamingStation
+
+	config.Items = make([]ItemConfiguraiton, 1)
+
+	currentItem := ItemConfiguraiton{}
+	currentItem.Name = "Acqua"
+	currentItem.ID = "1"
+	currentItem.IncomingPrice = 50
+	currentItem.PublicPrice = 100
+	config.Items[0] = currentItem
 
 	log.Log.Debug("Exiting loadConfig")
 }
