@@ -23,6 +23,8 @@ const (
 // Devices interface
 type Device interface {
 	// Return device type
+	GetID() string
+	// Return device type
 	GetType() DeviceType
 	// Return device status
 	GetStatus() DeviceStatus
