@@ -131,3 +131,10 @@ func (gs *GameStation) GetName() string {
 	log.Log.Debug("Exiting GetName")
 	return gs.name
 }
+
+// Get the ID for current GameStation
+func (gs *GameStation) GetID() string {
+	log.Log.Debug("Entering GetID")
+	log.Log.Debug("Exiting GetID")
+	return gs.id
+}

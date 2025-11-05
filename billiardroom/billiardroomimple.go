@@ -84,6 +84,13 @@ func (manage *manager) GetGamingStation(id string) (gamestation.GamingStation, e
 // Add new Gaming station to the list
 func (manage *manager) AddGamingStation(gs gamestation.GamingStation) error {
 	log.Log.Debug("Entering AddGamingStation")
+	_, ok := manage.gameStations[gs.GetID()]
+	if ok {
+		err := fmt.Errorf("gaming station with specified ID %s already exists", gs.GetID())
+		log.Log.Debug("Exiting AddGamingStation")
+		return err
+	}
+	manage.gameStations[gs.GetID()] = gs
 	log.Log.Debug("Exiting AddGamingStation")
 	return nil
 }
@@ -125,6 +132,13 @@ func (manage *manager) GetItem(id string) (warehouse.Item, error) {
 // Add new item to the list
 func (manage *manager) AddItem(item warehouse.Item) error {
 	log.Log.Debug("Entering AddItem")
+	_, ok := manage.items[item.ID]
+	if ok {
+		err := fmt.Errorf("gaming station with specified ID %s already exists", item.ID)
+		log.Log.Debug("Exiting AddItem")
+		return err
+	}
+	manage.items[item.ID] = item
 	log.Log.Debug("Exiting AddItem")
 	return nil
 }

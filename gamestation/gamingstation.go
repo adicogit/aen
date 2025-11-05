@@ -26,4 +26,6 @@ type GamingStation interface {
 	SetName(name string)
 	// Get the name for current GameStation
 	GetName() string
+	// Get the ID for current GameStation
+	GetID() string
 }

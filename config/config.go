@@ -1,34 +1,47 @@
 package config
 
-import "aen.it/poolmanager/log"
+import (
+	"os"
+	"path/filepath"
+
+	"aen.it/poolmanager/log"
+	"gopkg.in/yaml.v2"
+)
 
 // Define the payment configuration
 type PaymentConfiguration struct {
 	// Specify minimum duration to be payed
-	MinimumDuration int `json:"minimumDuration"`
+	MinimumDuration int `yaml:"minimumDuration"`
 	// Specify cost for any hour
-	CostPerHour int `json:"costPerHour"`
+	CostPerHour int `yaml:"costPerHour"`
 }
 
 // Define the game station configuraiton
 type GameStationConfiguraiton struct {
-	Name    string               `json:"name"`
-	ID      string               `json:"id"`
-	Payment PaymentConfiguration `json:"payment"`
+	// Specify the Game Station's name
+	Name string `yaml:"name"`
+	// Specify the Game Station's ID
+	ID string `yaml:"id"`
+	// Specify the Game Station's payment model
+	Payment PaymentConfiguration `yaml:"payment"`
 }
 
 // Define the item configuraiton
 type ItemConfiguraiton struct {
-	Name          string `json:"name"`
-	ID            string `json:"id"`
-	PublicPrice   int    `json:"publicPrice"`
-	IncomingPrice int    `json:"incomingPrice"`
+	// Specify the Item's name
+	Name string `yaml:"name"`
+	// Specify the Item's ID
+	ID string `yaml:"id"`
+	// Specify the Item's price for the public
+	PublicPrice int `yaml:"publicPrice"`
+	// Specify the price payed for this Item
+	IncomingPrice int `yaml:"incomingPrice"`
 }
 
 type configInfo struct {
-	DefaultPayment PaymentConfiguration       `json:"defaultPayment"`
-	GamingStations []GameStationConfiguraiton `json:"gamingStations"`
-	Items          []ItemConfiguraiton        `json:"items"`
+	DefaultPayment PaymentConfiguration       `yaml:"defaultPayment"`
+	GamingStations []GameStationConfiguraiton `yaml:"gamingStations"`
+	Items          []ItemConfiguraiton        `yaml:"items"`
 	Name           string
 }
 
@@ -38,46 +51,55 @@ func init() {
 	log.Log.Debug("Entering Config init")
 	//create new configuragion object
 	Config = &configInfo{}
+	currentDir, _ := os.Getwd()
+	path := filepath.Join(currentDir, "config", "config.yml")
 	//load configuration from default path
-	loadConfig("/etc/baas/baas.yml", Config)
+	loadConfig(path, Config)
 	log.Log.Debug("Exiting Config init")
 }
 
-//loadConfig allow to fill configuration obkect with information from file
+// loadConfig allow to fill configuration obkect with information from file
 func loadConfig(configPath string, config *configInfo) {
 	log.Log.Debug("Entering loadConfig")
 	if len(configPath) == 0 {
 		log.Log.Info("Used empty config path")
 	}
-	config.Name = "Prova"
-	defaultPayment := PaymentConfiguration{
-		CostPerHour:     500,
-		MinimumDuration: 30,
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Log.Error("Error getting current dir", "error", err)
 	}
-	config.DefaultPayment = defaultPayment
-	config.GamingStations = make([]GameStationConfiguraiton, 1)
+	log.Log.Debug("Current dir", "dir name", dir)
+	// Validate the config path
+	s, err := os.Stat(configPath)
+	if err == nil && !s.IsDir() {
+		// Open config file
+		file, err := os.Open(configPath)
+		if err == nil {
+			defer file.Close()
 
-	currentGamingStation := GameStationConfiguraiton{}
-	currentGamingStation.Name = "Postazione 1"
-	currentGamingStation.ID = "1"
-	currentGamingStation.Payment = defaultPayment
-	config.GamingStations[0] = currentGamingStation
+			// Init new YAML decode
+			d := yaml.NewDecoder(file)
 
-	config.Items = make([]ItemConfiguraiton, 1)
-
-	currentItem := ItemConfiguraiton{}
-	currentItem.Name = "Acqua"
-	currentItem.ID = "1"
-	currentItem.IncomingPrice = 50
-	currentItem.PublicPrice = 100
-	config.Items[0] = currentItem
+			// Start YAML decoding from file
+			err = d.Decode(config)
+			if err != nil {
+				log.Log.Info("Unable to load new config from specified configPath", "configPath", configPath, "error", err)
+			} else {
+				log.Log.Info("New config succesfully loaded from specified configPath", "configPath", configPath, "config", Config)
+			}
+		} else {
+			log.Log.Info("Unable to open config file specified configPath", "configPath", configPath)
+		}
+	} else {
+		log.Log.Error("Unable to find specified config path", "configPath", configPath, "error", err)
+	}
 
 	log.Log.Debug("Exiting loadConfig")
 }
 
-//ReInitialize allor to reload configuraiton specifying different
+// ReInitialize allor to reload configuraiton specifying different
 func (config *configInfo) ReInitialize(configPath string) {
 	log.Log.Debug("Entering ReInitialize")
-	loadConfig(configPath, config)
+	loadConfig(configPath, Config)
 	log.Log.Debug("Exiting ReInitialize")
 }
