@@ -15,7 +15,7 @@ body {
 
     /* --- GESTIONE DELLO SFONDO IMMAGINE --- */
     /* Sostituisci 'background.jpg' con il nome del tuo file immagine */
-    background-image: url('../images/background.webp'); 
+    background-image: url('../images/background/background.webp'); 
     background-size: cover; /* Copre l'intera area del body senza distorcere l'immagine */
     /*background-size: 100% 100%; /* Copre l'intera area del body senza distorcere l'immagine */
     background-position: center; /* Centra l'immagine nello schermo */
@@ -47,6 +47,7 @@ body {
 .block {
     /* Le dimensioni verranno impostate da JavaScript */
     background-color: #007bff;
+    background-image: url("images/billiard_log_1.jpeg");
     border-radius: 15px; 
     display: flex;
     justify-content: center;

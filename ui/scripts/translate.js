@@ -15,7 +15,15 @@ async function readJsonFile(fileName) {
   }
 }
 
-translations = readJsonFile('translation/translate.json');
+//translations = readJsonFile('translation/translate.json');
+translations = {
+  "it": {
+    "welcome_title": "Billiard Manager - ita"
+  },
+  "en": {
+    "welcome_title": "Billiard Manager - en"
+  }
+}
 
 function translatePage() {
     const userLang = navigator.language || navigator.userLanguage;
