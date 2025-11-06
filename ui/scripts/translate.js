@@ -18,10 +18,18 @@ async function readJsonFile(fileName) {
 //translations = readJsonFile('translation/translate.json');
 translations = {
   "it": {
-    "welcome_title": "Billiard Manager - ita"
+    "welcome_title": "Billiard Manager",
+    "nav_home": "Home",
+    "nav_about": "Chi siamo",
+    "nav_services": "Servizi",
+    "nav_contacts": "Contatti"
   },
   "en": {
-    "welcome_title": "Billiard Manager - en"
+    "welcome_title": "Billiard Manager",
+    "nav_home": "Home",
+    "nav_about": "About",
+    "nav_services": "Services",
+    "nav_contacts": "Contact"
   }
 }
 

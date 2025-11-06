@@ -1,4 +1,4 @@
-/* Rimuove i margini predefiniti e imposta l'altezza completa per il body e html */
+/* Remove predefined margins and set entire high for body and html */
 html, body {
     margin: 0;
     padding: 0;
@@ -9,19 +9,75 @@ html, body {
 }
 
 body {
+    margin: 0;
+    font-family: sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-height: 100vh; 
 
-    /* --- GESTIONE DELLO SFONDO IMMAGINE --- */
-    /* Sostituisci 'background.jpg' con il nome del tuo file immagine */
+    /* --- BACKGRROUND MANAGEMENT --- */
     background-image: url('../images/background/background.webp'); 
-    background-size: cover; /* Copre l'intera area del body senza distorcere l'immagine */
-    /*background-size: 100% 100%; /* Copre l'intera area del body senza distorcere l'immagine */
-    background-position: center; /* Centra l'immagine nello schermo */
-    background-repeat: no-repeat; /* Evita la ripetizione dell'immagine */
-    background-attachment: fixed; /* Mantiene lo sfondo fisso durante lo scroll (opzionale) */
+    background-size: cover; /* Cover entire body area without chnaging image ratio */
+    background-position: center;
+    background-repeat: no-repeat; /* Avoid image to be replicated */
+    background-attachment: fixed; /* Fix background during scrolling */
     /* -------------------------------------- */
+}
+
+header {
+    background-color: transparent;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: flex-start; /* Everything aligned to left */
+    width: 100%;
+}
+
+.menu-icon {
+    cursor: pointer;
+    padding: 5px;
+    z-index: 100;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    margin: 5px 0;
+    transition: 0.4s; /* Modify to change fade effect */
+}
+
+/* Stile per il menu */
+.menu {
+    display: none; /* Hide menu by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    /* background-color: DimGrey; */
+    background-color: rgba(68, 68, 68, 0.4);
+    padding-top: 60px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+    z-index: 99;
+}
+
+.menu ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.menu li a {
+    color: white;
+    padding: 15px 20px;
+    text-decoration: none;
+    display: block;
+    border-bottom: 1px solid #555;
+}
+
+.menu.open {
+    display: block; 
 }
 
 #controls {

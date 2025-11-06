@@ -37,3 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('resize', () => {
     generateBlocks();
 });
+
+// Seleziona l'icona del menu e il menu stesso tramite i loro ID
+const menuIcon = document.getElementById('menu-icon');
+const menu = document.getElementById('menu');
+
+// Aggiungi un "ascoltatore di eventi" (event listener) per il click sull'icona
+menuIcon.addEventListener('click', function() {
+    // Alterna (toggle) la classe 'open' sul menu.
+    // Se c'è, la toglie; se non c'è, la mette.
+    menu.classList.toggle('open');
+});
