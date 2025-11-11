@@ -16,7 +16,7 @@ func init() {
 	log.SetLogLevel(slog.LevelDebug)
 	currentDir, _ := os.Getwd()
 	path := filepath.Join(currentDir, "..", "config", "config.yml")
-	config.Config.ReInitialize(path)
+	config.ReInitializeConfig(path, config.BilliardRoomConfig)
 	Manager.loadFromConfig()
 }
 
@@ -85,7 +85,7 @@ func TestBilliardRoomAddStation(t *testing.T) {
 	stationConfig := config.GameStationConfiguraiton{
 		ID:      "test",
 		Name:    "Postazione di test",
-		Payment: config.Config.DefaultPayment,
+		Payment: config.BilliardRoomConfig.DefaultPayment,
 	}
 	station := gamestation.New(stationConfig)
 	Manager.AddGamingStation(&station)

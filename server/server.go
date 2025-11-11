@@ -1,12 +1,14 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/mux"
 
 	"aen.it/poolmanager/billiardroom"
+	"aen.it/poolmanager/config"
 	"aen.it/poolmanager/log"
 )
 
@@ -31,11 +33,26 @@ func commonHeader(next http.Handler) http.Handler {
 // Start starts the http server
 func (server *Server) Start() error {
 	log.Log.Debug("Entering Server.commonHeader")
+	var err error
+
 	router := mux.NewRouter().StrictSlash(true)
+
+	WebuiHandler.SetStaticPath(config.UIConfig.WebsiteDir)
+	router.PathPrefix("/").Handler(WebuiHandler)
 
 	// Set common header for all requests
 	router.Use(commonHeader)
 
+	portNumber := fmt.Sprintf(":%d", config.UIConfig.PortNumber)
+	if len(config.UIConfig.CertFile) == 0 {
+		log.Log.Debug("Start listening http", "port number", config.UIConfig.PortNumber)
+		err = http.ListenAndServe(portNumber, router)
+	} else {
+		log.Log.Debug("Start listening https", "port number", config.UIConfig.PortNumber)
+		err = http.ListenAndServeTLS(portNumber, config.UIConfig.CertFile, config.UIConfig.KeyFile, router)
+	}
+	log.Log.Debug("Listen and Serve passed with", "result", err)
+
 	log.Log.Debug("Exiting Server.commonHeader")
-	return nil
+	return err
 }

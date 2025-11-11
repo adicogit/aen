@@ -28,14 +28,14 @@ func init() {
 
 func (manage *manager) loadFromConfig() {
 	log.Log.Debug("Entering loadFromConfig")
-	manage.name = config.Config.Name
+	manage.name = config.BilliardRoomConfig.Name
 	manage.gameStations = make(map[string]gamestation.GamingStation)
-	for _, station := range config.Config.GamingStations {
+	for _, station := range config.BilliardRoomConfig.GamingStations {
 		newGameStation := gamestation.New(station)
 		manage.gameStations[station.ID] = &newGameStation
 	}
 	manage.items = make(map[string]warehouse.Item)
-	for _, item := range config.Config.Items {
+	for _, item := range config.BilliardRoomConfig.Items {
 		newItem := warehouse.Item{
 			ID:            item.ID,
 			Name:          item.Name,

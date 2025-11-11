@@ -1,0 +1,3 @@
+portNumber: 4000
+websiteDir: "D:\\Projects\\aen\\ui"
+log_level: "debug"
