@@ -2,9 +2,7 @@
 html, body {
     margin: 0 auto;
     padding: 0;
-    /*height: 100%;*/
-    height: 768px;
-    width: 1024px;
+    height: 100%;
     /* Rimosso background-color: #f4f4f4; dal body */
     font-family: sans-serif;
     overflow: auto; 
@@ -19,7 +17,6 @@ body {
     min-height: 100vh; 
 
     /* --- BACKGRROUND MANAGEMENT --- */
-    background-image: url('../images/background/background.webp'); 
     background-size: cover; /* Cover entire body area without chnaging image ratio */
     background-position: center;
     background-repeat: no-repeat; /* Avoid image to be replicated */

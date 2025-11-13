@@ -1,8 +1,54 @@
-function generateBlocks() {
+async function getGameStationIDList(){
+    // Specify URL to be used to load UI config
+    const API_URL = '/api/v1/gamestations'; 
+    let list;
+    
+    try {
+        // GET needed info
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP! Status: ${response.status}`);
+        }
+
+        // parse received JSON
+        const gameStations = await response.json();
+
+        // Get number of game stations
+        list = gameStations.id; 
+    } catch (error) {
+        console.error("ERROR in loading list og game station IDs:", error);
+    }
+    return list;
+}
+
+async function getGameStation(id){
+    // Specify URL to be used to load UI config
+    const API_URL = '/api/v1/gamestations/' + id; 
+    let gameStation;
+    
+    try {
+        // GET needed info
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP! Status: ${response.status}`);
+        }
+
+        // parse received JSON
+        gameStation = await response.json();
+
+    } catch (error) {
+        console.error("ERROR in loading game station " + id + " :", error);
+    }
+    return gameStation;
+}
+
+async function generateBlocks() {
     /* Number of blocks depends on number of gaming station using API*/
-    const numBlocksInput = 12;
+    const gameStationIDList = await getGameStationIDList();
+    const n = parseInt(gameStationIDList.length);
     const container = document.getElementById('container');
-    const n = parseInt(numBlocksInput.value);
     
     container.innerHTML = '';
 
@@ -13,12 +59,10 @@ function generateBlocks() {
     let size = Math.floor(Math.min(window.innerWidth / cols, window.innerHeight / rows)) - 10;
     
     if (size < 20) size = 20;
-    const iconFiles = ['billiard_logo_1.jpeg','billiard_logo_2.jpeg','billiard_logo_3.jpeg','billiard_logo_4.jpeg','billiard_logo_5.jpeg','billiard_logo_6.jpeg','billiard_logo_7.jpeg',
-                    'billiard_logo_8.jpeg','billiard_logo_9.jpeg','billiard_logo_10.jpeg','card_logo_1.jpeg','card_logo_2.jpeg','card_logo_3.jpeg','card_logo_4.jpeg','card_logo_5.jpeg',
-                    'card_logo_6.jpeg','card_logo_7.jpeg','card_logo_8.jpeg','card_logo_9.jpeg','card_logo_2.jpeg','ps_logo_1.jpeg','ps_logo_2.jpeg','ps_logo_3.jpeg','ps_logo_4.jpeg',
-                    'ps_logo_5.jpeg','ps_logo_6.jpeg','ps_logo_7.jpeg']
+    
     for (let i = 1; i <= numBlocksInput; i++) {
-        let imageUrl = 'images/icons/' + iconFiles[Math.floor(Math.random() * iconFiles.length)]
+        let gameStation = await getGameStation(gameStationIDList[i])
+        let imageUrl = gameStation.iconPath
         const block = document.createElement('div');
         block.classList.add('block_station');
         block.textContent = "postazione " + i;
@@ -61,3 +105,41 @@ menuIcon.addEventListener('click', function() {
     // Se c'è, la toglie; se non c'è, la mette.
     menu.classList.toggle('open');
 });
+
+// Set backgound image on page load
+async function setbackgroundImage() {
+    // Specify URL to be used to load UI config
+    const API_URL = '/api/v1/uiconfig'; 
+
+    try {
+        // GET needed info
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP! Status: ${response.status}`);
+        }
+
+        // parse received JSON
+        const data = await response.json();
+
+        // Get background path from received json
+        const imageUrl = data.background_image; 
+
+        if (imageUrl) {
+            // Set background image using CSS
+            document.body.style.backgroundImage = `url('${imageUrl}')`;
+
+            console.log(`Background set using: ${imageUrl}`);
+        } else {
+            console.error("Retrieved JSON does not contain valid 'background_image' field.");
+        }
+
+    } catch (error) {
+        console.error("ERROR in loading background image:", error);
+        // Use default image
+        document.body.style.backgroundColor = `url('/images/background/background.webp')`; 
+    }
+}
+
+// invoke backgroun image set on page loading
+setbackgroundImage();

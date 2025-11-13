@@ -17,7 +17,8 @@ func init() {
 func TestConfig(t *testing.T) {
 	currentDir, _ := os.Getwd()
 	path := filepath.Join(currentDir, "billiardRoomConfig.yml")
-	ReInitializeConfig(path, BilliardRoomConfig)
+	BilliardRoomConfig.SetConfigFilePath(path)
+	BilliardRoomConfig.LoadConfig()
 	name := BilliardRoomConfig.Name
 	if len(name) == 0 {
 		t.Errorf("Config initialization FAILED. Its name is empty: %s", name)

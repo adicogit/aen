@@ -80,7 +80,7 @@ func (h webuiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Log.Error("Unable to serve UI becasue ", "error", err)
 		// if we got an error (that wasn't that the file doesn't exist) stating the
 		// file, return a 500 internal server error and stop
-		http.Error(w, "Unable to serve UI", http.StatusInternalServerError)
+		http.Error(w, "Unable to serve UI", http.StatusNotFound)
 		return
 	}
 	if len(config.UIConfig.PortalFrontendURL) > 0 {

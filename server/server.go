@@ -34,8 +34,16 @@ func commonHeader(next http.Handler) http.Handler {
 func (server *Server) Start() error {
 	log.Log.Debug("Entering Server.commonHeader")
 	var err error
+	server.billiardManager = billiardroom.Manager
 
 	router := mux.NewRouter().StrictSlash(true)
+
+	// API to handle UI configuration
+	router.HandleFunc("/api/v1/uiconfig", server.getUIConfig).Methods("GET")
+	router.HandleFunc("/api/v1/uiconfig", server.setUIConfig).Methods("PUT")
+
+	// API to handle game stations
+	router.HandleFunc("/api/v1/gamestations", server.getGameStations).Methods("GET")
 
 	WebuiHandler.SetStaticPath(config.UIConfig.WebsiteDir)
 	router.PathPrefix("/").Handler(WebuiHandler)

@@ -15,8 +15,9 @@ import (
 func init() {
 	log.SetLogLevel(slog.LevelDebug)
 	currentDir, _ := os.Getwd()
-	path := filepath.Join(currentDir, "..", "config", "config.yml")
-	config.ReInitializeConfig(path, config.BilliardRoomConfig)
+	path := filepath.Join(currentDir, "..", "config", "billiardRoomConfig.yml")
+	config.BilliardRoomConfig.SetConfigFilePath(path)
+	config.BilliardRoomConfig.LoadConfig()
 	Manager.loadFromConfig()
 }
 
