@@ -44,11 +44,14 @@ async function getGameStation(id){
     return gameStation;
 }
 
-async function generateBlocks() {
+async function generateGamingBlocks() {
+}
+
+async function generateGamingBlocks() {
     /* Number of blocks depends on number of gaming station using API*/
     const gameStationIDList = await getGameStationIDList();
-    const n = parseInt(gameStationIDList.length);
-    const container = document.getElementById('container');
+    const numBlocksInput = parseInt(gameStationIDList.length);
+    const container = document.getElementById('containerGamingStation');
     
     container.innerHTML = '';
 
@@ -60,8 +63,9 @@ async function generateBlocks() {
     
     if (size < 20) size = 20;
     
-    for (let i = 1; i <= numBlocksInput; i++) {
-        let gameStation = await getGameStation(gameStationIDList[i])
+    for (let i = 0; i < numBlocksInput; i++) {
+        let id = gameStationIDList[i]
+        let gameStation = await getGameStation(id)
         let imageUrl = gameStation.iconPath
         const block = document.createElement('div');
         block.classList.add('block_station');
@@ -87,6 +91,11 @@ async function generateBlocks() {
     }
 }
 
+async function generateBlocks() {
+    generateGamingBlocks()
+    generateConfigBlocks()
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     generateBlocks();
 });
@@ -104,6 +113,11 @@ menuIcon.addEventListener('click', function() {
     // Alterna (toggle) la classe 'open' sul menu.
     // Se c'è, la toglie; se non c'è, la mette.
     menu.classList.toggle('open');
+});
+
+document.getElementById('Config').addEventListener('click', function() {
+    this.classList.toggle('flipped');
+    console.info('flip page')
 });
 
 // Set backgound image on page load

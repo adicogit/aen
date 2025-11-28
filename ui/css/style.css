@@ -3,7 +3,6 @@ html, body {
     margin: 0 auto;
     padding: 0;
     height: 100%;
-    /* Rimosso background-color: #f4f4f4; dal body */
     font-family: sans-serif;
     overflow: auto; 
 }
@@ -31,6 +30,36 @@ header {
     display: flex;
     justify-content: flex-start; /* Everything aligned to left */
     width: 100%;
+}
+
+.config-button {
+    position: fixed; /* Keep biutton fixed even on scrolling the page */
+    bottom: 20px;    /* 20 pixel from bottom */
+    right: 20px;     /* 20 pixel from right*/
+    background-color: transparent; /*backgournd color */
+    color: white;    /* Icon color */
+    border: none;
+    border-radius: 50%; /* Make button rounded */
+    width: 50px;
+    height: 50px;
+    font-size: 24px; /* Icon's size */
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* add a shadow */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Put button on top ov any other element */
+}
+
+.config-button:hover {
+    background-color:transparent; /* Change button color on mouse movement */
+}
+
+.config-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .menu-icon {
@@ -86,6 +115,40 @@ header {
     background-color: rgba(255, 255, 255, 0.85); 
     padding: 10px;
     border-radius: 5px;
+}
+
+#containerGamingStation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px; 
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    flex-grow: 1; 
+    padding: 10px;
+}
+
+#containerConfigStation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px; 
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    flex-grow: 1; 
+    padding: 10px;
+}
+
+.flipper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s; /* La durata dell'animazione */
+    transform-style: preserve-3d; /* Fondamentale per l'effetto 3D */
+}
+
+.container.flipped .flipper {
+    transform: rotateY(180deg); /* Ruota l'intero "flipper" di 180 gradi */
 }
 
 #container {

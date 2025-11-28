@@ -9,10 +9,11 @@ import (
 )
 
 type GameStation struct {
-	name    string
-	id      string
-	payment payment.GamePayment
-	devices []devices.Device
+	name     string
+	id       string
+	payment  payment.GamePayment
+	iconPath string
+	devices  []devices.Device
 }
 
 func init() {
@@ -24,10 +25,11 @@ func New(config config.GameStationConfiguraiton) GameStation {
 	log.Log.Debug("Entering New for GameStation")
 	log.Log.Debug("Exiting  New for GameStation")
 	return GameStation{
-		name:    config.Name,
-		id:      config.ID,
-		payment: payment.New(config.Payment),
-		devices: make([]devices.Device, 0),
+		name:     config.Name,
+		id:       config.ID,
+		payment:  payment.New(config.Payment),
+		iconPath: config.IconPath,
+		devices:  make([]devices.Device, 0),
 	}
 }
 
@@ -120,7 +122,7 @@ func (gs *GameStation) GetDevicesList() []devices.Device {
 
 // Set the name for current GameStation
 func (gs *GameStation) SetName(name string) {
-	log.Log.Debug("Entering SetName")
+	log.Log.Debug("Entering SetName", "name", name)
 	gs.name = name
 	log.Log.Debug("Exiting SetName")
 }
@@ -128,8 +130,29 @@ func (gs *GameStation) SetName(name string) {
 // Get the name for current GameStation
 func (gs *GameStation) GetName() string {
 	log.Log.Debug("Entering GetName")
-	log.Log.Debug("Exiting GetName")
+	log.Log.Debug("Exiting GetName", "name", gs.name)
 	return gs.name
+}
+
+// Get the name for current GameStation
+func (gs *GameStation) GetStatus() payment.PaymentStatus {
+	log.Log.Debug("Entering GetStatus")
+	log.Log.Debug("Exiting GetStatus", "status", gs.payment.GetPaymentStatus())
+	return gs.payment.GetPaymentStatus()
+}
+
+// Set the icon path for current GameStation
+func (gs *GameStation) SetIconPath(iconPath string) {
+	log.Log.Debug("Entering SetIconPath", "iconPath", iconPath)
+	gs.iconPath = iconPath
+	log.Log.Debug("Exiting SetIconPath")
+}
+
+// Get the name for current GameStation
+func (gs *GameStation) GetIconPath() string {
+	log.Log.Debug("Entering GetIconPath")
+	log.Log.Debug("Exiting GetIconPath", "iconPath", gs.iconPath)
+	return gs.iconPath
 }
 
 // Get the ID for current GameStation

@@ -44,6 +44,7 @@ func (server *Server) Start() error {
 
 	// API to handle game stations
 	router.HandleFunc("/api/v1/gamestations", server.getGameStations).Methods("GET")
+	router.HandleFunc("/api/v1/gamestations/{gsID}", server.getGameStation).Methods("GET")
 
 	WebuiHandler.SetStaticPath(config.UIConfig.WebsiteDir)
 	router.PathPrefix("/").Handler(WebuiHandler)

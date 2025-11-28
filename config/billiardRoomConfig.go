@@ -21,6 +21,8 @@ type GameStationConfiguraiton struct {
 	Name string `yaml:"name"`
 	// Specify the Game Station's ID
 	ID string `yaml:"id"`
+	// Specify the Game Station's icon path
+	IconPath string `yaml:"iconPath"`
 	// Specify the Game Station's payment model
 	Payment PaymentConfiguration `yaml:"payment"`
 }

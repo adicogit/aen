@@ -28,4 +28,10 @@ type GamingStation interface {
 	GetName() string
 	// Get the ID for current GameStation
 	GetID() string
+	// Get the status for current GameStation
+	GetStatus() payment.PaymentStatus
+	// Set the icon path for current GameStation
+	SetIconPath(iconPath string)
+	// Get the icon path for current GameStation
+	GetIconPath() string
 }

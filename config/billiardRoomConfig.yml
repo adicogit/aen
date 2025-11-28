@@ -13,3 +13,4 @@ gamingStations:
   - name: "Postazione 1"
     id: "1"
     payment: *defaultPayment
+    iconPath: "images/icons/billiard_logo_1.jpeg"
