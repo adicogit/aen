@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
+	"strings"
 
 	"aen.it/poolmanager/config"
 	"aen.it/poolmanager/log"
@@ -46,52 +46,146 @@ func (h webuiHandler) SetStaticPath(staticPath string) {
 // file located at the index path on the SPA handler will be served. This
 // is suitable behavior for serving an SPA (single page application).
 func (h webuiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	package server
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"aen.it/poolmanager/config"
+	"aen.it/poolmanager/log"
+)
+
+const (
+	DefaultStaticPath = "/opt/baas-server/website/"
+	DefaultIndexPath  = "index.html"
+)
+
+type webuiHandler struct {
+	staticPath string
+	indexPath  string
+}
+
+var WebuiHandler *webuiHandler
+
+func init() {
+	WebuiHandler = &webuiHandler{}
+	WebuiHandler.staticPath = DefaultStaticPath
+	WebuiHandler.indexPath = DefaultIndexPath
+}
+
+func (h webuiHandler) SetStaticPath(staticPath string) {
+	log.Log.Debug("Entering SetStaticPath")
+	if len(staticPath) > 0 {
+		WebuiHandler.staticPath = staticPath
+	} else {
+		log.Log.Warn("Requested to change UI static path to empty value. Still using current value", "currentValue", WebuiHandler.staticPath)
+	}
+	log.Log.Debug("Exiting SetStaticPath")
+}
+
+func (h webuiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Log.Debug("Entering ServeHTTP")
-	// get the absolute path to prevent directory traversal
-	path, err := filepath.Abs(r.URL.Path)
+	
+	cleanPath := filepath.Clean(r.URL.Path)
+	log.Log.Debug("Retrieve path from HTTP request", "path", cleanPath)
+
+	path, err := h.validatePath(cleanPath, r.URL.Path)
 	if err != nil {
-		log.Log.Error("Unable to retrieve absolute path from HTTP request becasue ", "error", err)
-		// if we failed to get the absolute path respond with a 400 bad request
-		// and stop
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		h.handlePathError(w, err)
 		return
 	}
-	log.Log.Debug("Retrieve path from HTTP request", "path", path)
 
-	//remove c:\ and d:\ in case of windows platform
-	re := regexp.MustCompile(`(?i)c:\\`)
-	path = re.ReplaceAllString(path, "\\\\")
-	re = regexp.MustCompile(`(?i)d:\\`)
-	path = re.ReplaceAllString(path, "\\\\")
-	log.Log.Debug("Removing disk letter from path in case of Windows platform", "path", path)
-	// prepend the path with the path to the static directory
-	path = filepath.Join(h.staticPath, path)
-	log.Log.Debug("Prepending the path with the path to the static directory", "path", path)
+	log.Log.Debug("Validated path within static directory", "path", path)
 
-	// check whether a file exists at the given path
-	_, err = os.Stat(path)
-	if !os.IsNotExist(err) {
-		log.Log.Info("serving requested resource for UI", "resource", path)
-		// file does not exist, serve index.html
-		//http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
-		http.ServeFile(w, r, path)
-		return
-	} else if err != nil {
-		log.Log.Error("Unable to serve UI becasue ", "error", err)
-		// if we got an error (that wasn't that the file doesn't exist) stating the
-		// file, return a 500 internal server error and stop
-		http.Error(w, "Unable to serve UI", http.StatusNotFound)
-		return
+	fileToServe := h.resolveFile(path)
+	log.Log.Info("serving requested resource for UI", "resource", fileToServe)
+	
+	h.setSecurityHeaders(w)
+	http.ServeFile(w, r, fileToServe)
+	
+	log.Log.Debug("Exiting ServeHTTP")
+}
+
+func (h webuiHandler) validatePath(cleanPath, originalPath string) (string, error) {
+	path := filepath.Join(h.staticPath, cleanPath)
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		log.Log.Error("Unable to retrieve absolute path from HTTP request because ", "error", err)
+		return "", &pathError{statusCode: http.StatusBadRequest, message: err.Error()}
 	}
+
+	if h.isPathTraversal(absPath) {
+		log.Log.Warn("Path traversal attempt detected", "requested", originalPath, "resolved", absPath)
+		return "", &pathError{statusCode: http.StatusForbidden, message: "Forbidden"}
+	}
+
+	return absPath, nil
+}
+
+func (h webuiHandler) isPathTraversal(absPath string) bool {
+	rel, err := filepath.Rel(h.staticPath, absPath)
+	return err != nil || strings.HasPrefix(rel, "..")
+}
+
+func (h webuiHandler) resolveFile(path string) string {
+	if h.fileExists(path) {
+		return path
+	}
+	return filepath.Join(h.staticPath, h.indexPath)
+}
+
+func (h webuiHandler) fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func (h webuiHandler) setSecurityHeaders(w http.ResponseWriter) {
 	if len(config.UIConfig.PortalFrontendURL) > 0 {
-		// PortalFrontendURL property has been specified and we must set X-Frame-Options
-		// allowing Portal plugin to use micro frontend
+		w.Header().Set("X-Frame-Options", "allow-from "+config.UIConfig.PortalFrontendURL)
+	}
+	w.Header().Set("Content-Security-Policy", "default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://www.google.com")
+}
+
+func (h webuiHandler) handlePathError(w http.ResponseWriter, err error) {
+	if pe, ok := err.(*pathError); ok {
+		http.Error(w, pe.message, pe.statusCode)
+		return
+	}
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+}
+
+type pathError struct {
+	statusCode int
+	message    string
+}
+
+func (e *pathError) Error() string {
+	return e.message
+}
+func (h webuiHandler) setSecurityHeaders(w http.ResponseWriter) {
+	if len(config.UIConfig.PortalFrontendURL) > 0 {
 		allowFrom := "allow-from " + config.UIConfig.PortalFrontendURL
 		w.Header().Set("X-Frame-Options", allowFrom)
 	}
 	w.Header().Set("Content-Security-Policy", "default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://www.google.com")
+}
 
-	// otherwise, use http.FileServer to serve the static dir
-	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
-	log.Log.Debug("Exiting ServeHTTP")
+func (h webuiHandler) handlePathError(w http.ResponseWriter, err error) {
+	if pe, ok := err.(*pathError); ok {
+		http.Error(w, pe.message, pe.statusCode)
+	} else {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+type pathError struct {
+	statusCode int
+	message    string
+}
+
+func (e *pathError) Error() string {
+	return e.message
 }

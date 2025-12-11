@@ -18,6 +18,7 @@ async function getGameStationIDList(){
         list = gameStations.id; 
     } catch (error) {
         console.error("ERROR in loading list og game station IDs:", error);
+        return [];
     }
     return list;
 }
@@ -40,6 +41,7 @@ async function getGameStation(id){
 
     } catch (error) {
         console.error("ERROR in loading game station " + id + " :", error);
+        return null;
     }
     return gameStation;
 }
@@ -64,17 +66,25 @@ async function generateGamingBlocks() {
     
     if (size < 100) size = 100; // Minimum size for usability
     
+    // Fetch all game stations in parallel for better performance
+    const gameStations = await Promise.all(gameStationIDList.map(id => getGameStation(id)));
+    
     for (let i = 0; i < numBlocksInput; i++) {
-        let id = gameStationIDList[i]
-        let gameStation = await getGameStation(id)
+        let gameStation = gameStations[i]
         let imageUrl = gameStation.iconPath
+        // Validate and sanitize imageUrl to prevent CSS injection
+        const urlPattern = /^(https?:\/\/|\/|\.\/)[^\s'"()]*\.(jpg|jpeg|png|gif|webp|svg)$/i;
+        const sanitizedUrl = (imageUrl && urlPattern.test(imageUrl)) ? imageUrl.replace(/['"()]/g, '') : '';
+        
         const block = document.createElement('div');
         block.classList.add('block_station');
         block.textContent = "postazione " + i;
         block.style.width = `${size}px`;
         block.style.height = `${size}px`;
         // Block icon must be retrieved using API
-        block.style.backgroundImage = `url('${imageUrl}')`; 
+        if (sanitizedUrl) {
+            block.style.backgroundImage = `url('${sanitizedUrl}')`;
+        }
 
         const block_top = document.createElement('div');
         block_top.classList.add('block_station_top');
@@ -112,9 +122,13 @@ async function generateConfigBlocks() {
     
     if (size < 100) size = 100; // Minimum size for usability
     
+    // Fetch all game stations in parallel
+    const gameStations = await Promise.all(
+        gameStationIDList.map(id => getGameStation(id))
+    );
+    
     for (let i = 0; i < numBlocksInput; i++) {
-        let id = gameStationIDList[i];
-        let gameStation = await getGameStation(id);
+        let gameStation = gameStations[i];
         let imageUrl = gameStation.iconPath;
         
         const block = document.createElement('div');
@@ -195,6 +209,12 @@ async function setbackgroundImage() {
         const imageUrl = data.background_image; 
 
         if (imageUrl) {
+            // Validate imageUrl format before using
+            if (!/^[a-zA-Z0-9\/._-]+$/.test(imageUrl)) {
+                console.error("Invalid background image URL format. URL rejected for security reasons.");
+                return;
+            }
+            
             // Set background image using CSS
             document.body.style.backgroundImage = `url('${imageUrl}')`;
 
