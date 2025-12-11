@@ -95,7 +95,7 @@ async function generateGamingBlocks() {
 async function generateConfigBlocks() {
     const gameStationIDList = await getGameStationIDList();
     const numBlocksInput = parseInt(gameStationIDList.length);
-    const container = document.getElementById('containerConfigStation');
+    const container = document.getElementById('configBlocksContainer');
     
     container.innerHTML = '';
 
@@ -146,7 +146,14 @@ async function generateConfigBlocks() {
     addBlock.style.alignItems = 'center';
     addBlock.style.justifyContent = 'center';
     addBlock.style.fontSize = `${size * 0.5}px`;
+    addBlock.setAttribute('data-translate-title', 'add_station_button');
+    addBlock.setAttribute('title', 'Add new station');
     container.appendChild(addBlock);
+    
+    // Translate dynamically created content
+    if (typeof translateDynamicContent === 'function') {
+        translateDynamicContent();
+    }
 }
 
 async function generateBlocks() {
@@ -160,17 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('resize', () => {
     generateBlocks();
-});
-
-// Seleziona l'icona del menu e il menu stesso tramite i loro ID
-const menuIcon = document.getElementById('menu-icon');
-const menu = document.getElementById('menu');
-
-// Aggiungi un "ascoltatore di eventi" (event listener) per il click sull'icona
-menuIcon.addEventListener('click', function() {
-    // Alterna (toggle) la classe 'open' sul menu.
-    // Se c'è, la toglie; se non c'è, la mette.
-    menu.classList.toggle('open');
 });
 
 document.getElementById('Config').addEventListener('click', function() {

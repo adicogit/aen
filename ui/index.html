@@ -8,21 +8,6 @@
 </head>
 <body>
 
-     <header>
-        <div class="menu-icon" id="menu-icon">
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-        </div>
-        <nav class="menu" id="menu">
-            <ul>
-                <li><a href="#home"data-translate="nav_home">Home</a></li>
-                <li><a href="#about"data-translate="nav_about">About</a></li>
-                <li><a href="#services"data-translate="nav_services">Services</a></li>
-                <li><a href="#contact"data-translate="nav_contacts">Contacts</a></li>
-            </ul>
-        </nav>
-    </header>
 
     <main>
         <div id="container">
@@ -30,13 +15,19 @@
                 <div id="containerGamingStation">
                 </div>
                 <div id="containerConfigStation">
+                    <div id="configBlocksContainer">
+                    </div>
+                    <div class="config-buttons">
+                        <button class="cancel-button" id="cancelButton" data-translate="cancel_button">Cancel</button>
+                        <button class="save-button" id="saveButton" data-translate="save_button">Save</button>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <button class="config-button" id="Config" aria-label="Config\">
-       <img src="images/icons/settings.png" alt="Config" id="configIconImg">
+    <button class="config-button" id="Config" aria-label="Config" title="Settings" data-translate-title="config_button">
+       <img src="images/icons/settings.png" alt="Config" id="configIconImg" data-translate-alt="config_icon_alt">
     </button>
 
     <script src="scripts/script.js"></script>

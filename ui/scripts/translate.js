@@ -1,39 +1,31 @@
 
-async function readJsonFile(fileName) {
+let translations = null;
+
+async function loadTranslations() {
   try {
-    const data = await fetch(fileName);
+    const response = await fetch('../translation/translate.json');
     
-    const jsonObject = JSON.parse(data);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     
-    console.log('Data read from file:', jsonObject);
+    const jsonObject = await response.json();
+    
+    console.log('Translations loaded from file:', jsonObject);
     
     return jsonObject;
 
   } catch (error) {
-    console.error('Error while parsing json file:', error);
-    throw error; 
+    console.error('Error while loading translations:', error);
+    throw error;
   }
 }
 
-//translations = readJsonFile('translation/translate.json');
-translations = {
-  "it": {
-    "welcome_title": "Billiard Manager",
-    "nav_home": "Home",
-    "nav_about": "Chi siamo",
-    "nav_services": "Servizi",
-    "nav_contacts": "Contatti"
-  },
-  "en": {
-    "welcome_title": "Billiard Manager",
-    "nav_home": "Home",
-    "nav_about": "About",
-    "nav_services": "Services",
-    "nav_contacts": "Contact"
-  }
-}
-
-function translatePage() {
+async function translatePage() {
+    if (!translations) {
+        translations = await loadTranslations();
+    }
+    
     const userLang = navigator.language || navigator.userLanguage;
     const langCode = userLang.split('-')[0];
 
@@ -46,7 +38,32 @@ function translatePage() {
         }
     });
 
+    // Handle alt attribute translations
+    document.querySelectorAll('[data-translate-alt]').forEach(element => {
+        const key = element.getAttribute('data-translate-alt');
+        if (languageData[key]) {
+            element.alt = languageData[key];
+        }
+    });
+
+    // Handle title attribute translations (tooltips)
+    document.querySelectorAll('[data-translate-title]').forEach(element => {
+        const key = element.getAttribute('data-translate-title');
+        if (languageData[key]) {
+            element.title = languageData[key];
+        }
+    });
+
     document.documentElement.lang = langCode;
 }
 
-document.addEventListener('DOMContentLoaded', translatePage);
+// Function to translate dynamically created elements
+async function translateDynamicContent() {
+    await translatePage();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    translatePage().catch(error => {
+        console.error('Failed to translate page:', error);
+    });
+});

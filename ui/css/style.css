@@ -23,14 +23,6 @@ body {
     /* -------------------------------------- */
 }
 
-header {
-    background-color: transparent;
-    color: white;
-    padding: 10px 20px;
-    display: flex;
-    justify-content: flex-start; /* Everything aligned to left */
-    width: 100%;
-}
 
 .config-button {
     position: fixed; /* Keep biutton fixed even on scrolling the page */
@@ -48,7 +40,6 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; /* Put button on top ov any other element */
 }
 
 .config-button:hover {
@@ -62,51 +53,6 @@ header {
     border-radius: 50%;
 }
 
-.menu-icon {
-    cursor: pointer;
-    padding: 5px;
-    z-index: 100;
-}
-
-.bar {
-    width: 25px;
-    height: 3px;
-    background-color: white;
-    margin: 5px 0;
-    transition: 0.4s; /* Modify to change fade effect */
-}
-
-/* Stile per il menu */
-.menu {
-    display: none; /* Hide menu by default */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100%;
-    /* background-color: DimGrey; */
-    background-color: rgba(68, 68, 68, 0.4);
-    padding-top: 60px;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.5);
-    z-index: 99;
-}
-
-.menu ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.menu li a {
-    color: white;
-    padding: 15px 20px;
-    text-decoration: none;
-    display: block;
-    border-bottom: 1px solid #555;
-}
-
-.menu.open {
-    display: block; 
-}
 
 #controls {
     margin: 10px 0;
@@ -122,20 +68,38 @@ header {
     position: absolute;
     top: 0;
     left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+#containerGamingStation {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    height: 100%;
     padding: 10px;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
 }
 
 #containerConfigStation {
     transform: rotateY(180deg);
+    display: flex;
+    flex-direction: column;
+}
+
+#configBlocksContainer {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    align-items: flex-start;
+    align-content: flex-start;
+    padding: 10px;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .flipper {
@@ -160,7 +124,7 @@ header {
 .block_station {
     /* Le dimensioni verranno impostate da JavaScript */
     background-color: #007bff;
-    background-image: url("images/billiard_log_1.jpeg");
+    background-image: url("images/icons/billiard_logo_1.jpeg");
     border-radius: 15px;
     display: flex;
     flex-direction: column;
@@ -209,4 +173,46 @@ header {
 
 .block:hover {
     transform: scale(1.05);
+
+.config-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.cancel-button,
+.save-button {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.3s, transform 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cancel-button {
+    background-color: #ffcccc;
+    color: #cc0000;
+}
+
+.cancel-button:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+.save-button {
+    background-color: #ccffcc;
+    color: #006600;
+}
+
+.save-button:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
 }

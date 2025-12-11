@@ -4,13 +4,23 @@
     "nav_home": "Home",
     "nav_about": "Chi siamo",
     "nav_services": "Servizi",
-    "nav_contacts": "Contatti"
+    "nav_contacts": "Contatti",
+    "config_icon_alt": "Impostazioni",
+    "config_button": "Impostazioni",
+    "add_station_button": "Aggiungi nuova postazione",
+    "cancel_button": "Annulla",
+    "save_button": "Salva"
   },
   "en": {
     "welcome_title": "Billiard Manager",
     "nav_home": "Home",
     "nav_about": "About",
     "nav_services": "Services",
-    "nav_contacts": "Contacts"
+    "nav_contacts": "Contacts",
+    "config_icon_alt": "Settings",
+    "config_button": "Settings",
+    "add_station_button": "Add new station",
+    "cancel_button": "Cancel",
+    "save_button": "Save"
   }
 }
