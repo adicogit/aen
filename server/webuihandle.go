@@ -22,6 +22,11 @@ type webuiHandler struct {
 	indexPath  string
 }
 
+type pathError struct {
+	statusCode int
+	message    string
+}
+
 // WebuiHandler is the handler for mricrofrontend UI
 var WebuiHandler *webuiHandler
 
@@ -46,49 +51,8 @@ func (h webuiHandler) SetStaticPath(staticPath string) {
 // file located at the index path on the SPA handler will be served. This
 // is suitable behavior for serving an SPA (single page application).
 func (h webuiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	package server
-
-import (
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
-
-	"aen.it/poolmanager/config"
-	"aen.it/poolmanager/log"
-)
-
-const (
-	DefaultStaticPath = "/opt/baas-server/website/"
-	DefaultIndexPath  = "index.html"
-)
-
-type webuiHandler struct {
-	staticPath string
-	indexPath  string
-}
-
-var WebuiHandler *webuiHandler
-
-func init() {
-	WebuiHandler = &webuiHandler{}
-	WebuiHandler.staticPath = DefaultStaticPath
-	WebuiHandler.indexPath = DefaultIndexPath
-}
-
-func (h webuiHandler) SetStaticPath(staticPath string) {
-	log.Log.Debug("Entering SetStaticPath")
-	if len(staticPath) > 0 {
-		WebuiHandler.staticPath = staticPath
-	} else {
-		log.Log.Warn("Requested to change UI static path to empty value. Still using current value", "currentValue", WebuiHandler.staticPath)
-	}
-	log.Log.Debug("Exiting SetStaticPath")
-}
-
-func (h webuiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Log.Debug("Entering ServeHTTP")
-	
+
 	cleanPath := filepath.Clean(r.URL.Path)
 	log.Log.Debug("Retrieve path from HTTP request", "path", cleanPath)
 
@@ -102,10 +66,10 @@ func (h webuiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	fileToServe := h.resolveFile(path)
 	log.Log.Info("serving requested resource for UI", "resource", fileToServe)
-	
+
 	h.setSecurityHeaders(w)
 	http.ServeFile(w, r, fileToServe)
-	
+
 	log.Log.Debug("Exiting ServeHTTP")
 }
 
@@ -155,35 +119,6 @@ func (h webuiHandler) handlePathError(w http.ResponseWriter, err error) {
 		return
 	}
 	http.Error(w, err.Error(), http.StatusInternalServerError)
-}
-
-type pathError struct {
-	statusCode int
-	message    string
-}
-
-func (e *pathError) Error() string {
-	return e.message
-}
-func (h webuiHandler) setSecurityHeaders(w http.ResponseWriter) {
-	if len(config.UIConfig.PortalFrontendURL) > 0 {
-		allowFrom := "allow-from " + config.UIConfig.PortalFrontendURL
-		w.Header().Set("X-Frame-Options", allowFrom)
-	}
-	w.Header().Set("Content-Security-Policy", "default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://www.google.com")
-}
-
-func (h webuiHandler) handlePathError(w http.ResponseWriter, err error) {
-	if pe, ok := err.(*pathError); ok {
-		http.Error(w, pe.message, pe.statusCode)
-	} else {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-type pathError struct {
-	statusCode int
-	message    string
 }
 
 func (e *pathError) Error() string {

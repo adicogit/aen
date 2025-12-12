@@ -105,7 +105,7 @@ async function generateGamingBlocks() {
 async function generateConfigBlocks() {
     const gameStationIDList = await getGameStationIDList();
     const numBlocksInput = parseInt(gameStationIDList.length);
-    const container = document.getElementById('configBlocksContainer');
+    const container = document.getElementById('containerConfigStation');
     
     container.innerHTML = '';
 

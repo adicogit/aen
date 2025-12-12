@@ -86,20 +86,11 @@ body {
 #containerConfigStation {
     transform: rotateY(180deg);
     display: flex;
-    flex-direction: column;
-}
-
-#configBlocksContainer {
-    flex: 1;
-    display: flex;
     flex-wrap: wrap;
     gap: 5px;
     justify-content: center;
-    align-items: flex-start;
-    align-content: flex-start;
+    align-items: center;
     padding: 10px;
-    overflow-y: auto;
-    min-height: 0;
 }
 
 .flipper {
@@ -124,7 +115,7 @@ body {
 .block_station {
     /* Le dimensioni verranno impostate da JavaScript */
     background-color: #007bff;
-    background-image: url("images/icons/billiard_logo_1.jpeg");
+    background-image: url("../images/icons/billiard_logo_1.jpeg");
     border-radius: 15px;
     display: flex;
     flex-direction: column;
@@ -174,45 +165,14 @@ body {
 .block:hover {
     transform: scale(1.05);
 
-.config-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 0.1);
-    flex-shrink: 0;
-}
-
-.cancel-button,
-.save-button {
-    padding: 12px 30px;
-    border: none;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: opacity 0.3s, transform 0.2s;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.cancel-button {
-    background-color: #ffcccc;
-    color: #cc0000;
-}
-
-.cancel-button:hover {
-    opacity: 0.9;
-    transform: scale(1.05);
-}
-
-.save-button {
-    background-color: #ccffcc;
-    color: #006600;
-}
-
-.save-button:hover {
-    opacity: 0.9;
-    transform: scale(1.05);
-}
+    .config-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
+        margin-top: auto;
+    }
 }
