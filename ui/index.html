@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate="welcome_title">Billiard Manager</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
 
@@ -15,15 +17,43 @@
                 <div id="containerGamingStation">
                 </div>
                 <div id="containerConfigStation">
+                    <div class="config-header">
+                        <h1 data-translate="settings_title">Impostazioni</h1>
+                    </div>
+
+                    <div class="config-panels-slider">
+                        <!-- Panel 1 -->
+                        <div class="config-subpanel active" id="panel-1">
+                            <h2 data-translate="subpanel_1_title">Generale</h2>
+                            <p>Contenuto pannello 1...</p>
+                        </div>
+                        <!-- Panel 2 -->
+                        <div class="config-subpanel" id="panel-2">
+                            <h2 data-translate="subpanel_2_title">Display</h2>
+                            <p>Contenuto pannello 2...</p>
+                        </div>
+                        <!-- Panel 3 -->
+                        <div class="config-subpanel" id="panel-3">
+                            <h2 data-translate="subpanel_3_title">Sistema</h2>
+                            <p>Contenuto pannello 3...</p>
+                        </div>
+                    </div>
+
+                    <div class="config-pagination">
+                        <span class="dot active" data-index="0"></span>
+                        <span class="dot" data-index="1"></span>
+                        <span class="dot" data-index="2"></span>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <button class="config-button" id="Config" aria-label="Config" title="Settings" data-translate-title="config_button">
-       <img src="images/icons/settings.png" alt="Config" id="configIconImg" data-translate-alt="config_icon_alt">
+        <img src="images/icons/settings.png" alt="Config" id="configIconImg" data-translate-alt="config_icon_alt">
     </button>
 
+    <script src="scripts/gamingStationScript.js"></script>
     <script src="scripts/script.js"></script>
     <script src="scripts/translate.js"></script>
 </body>

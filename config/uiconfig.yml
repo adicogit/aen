@@ -1,5 +1,5 @@
 portNumber: 4000
-websiteDir: "D:\\Projects\\aen\\ui"
+websiteDir: "/Users/boss/Projects/aen/ui"
 log_level: "debug"
 ui_aspect:
    background_image: "/images/background/background.webp"

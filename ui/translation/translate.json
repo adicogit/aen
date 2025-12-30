@@ -9,7 +9,11 @@
     "config_button": "Impostazioni",
     "add_station_button": "Aggiungi nuova postazione",
     "cancel_button": "Annulla",
-    "save_button": "Salva"
+    "save_button": "Salva",
+    "settings_title": "Impostazioni",
+    "subpanel_1_title": "Generale",
+    "subpanel_2_title": "Video",
+    "subpanel_3_title": "Sistema"
   },
   "en": {
     "welcome_title": "Billiard Manager",
@@ -21,6 +25,10 @@
     "config_button": "Settings",
     "add_station_button": "Add new station",
     "cancel_button": "Cancel",
-    "save_button": "Save"
+    "save_button": "Save",
+    "settings_title": "Settings",
+    "subpanel_1_title": "General",
+    "subpanel_2_title": "Video",
+    "subpanel_3_title": "System"
   }
 }

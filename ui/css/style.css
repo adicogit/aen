@@ -1,10 +1,11 @@
 /* Remove predefined margins and set entire high for body and html */
-html, body {
+html,
+body {
     margin: 0 auto;
     padding: 0;
     height: 100%;
     font-family: sans-serif;
-    overflow: auto; 
+    overflow: auto;
 }
 
 body {
@@ -13,37 +14,49 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 100vh; 
+    min-height: 100vh;
 
     /* --- BACKGRROUND MANAGEMENT --- */
-    background-size: cover; /* Cover entire body area without chnaging image ratio */
+    background-size: cover;
+    /* Cover entire body area without chnaging image ratio */
     background-position: center;
-    background-repeat: no-repeat; /* Avoid image to be replicated */
-    background-attachment: fixed; /* Fix background during scrolling */
+    background-repeat: no-repeat;
+    /* Avoid image to be replicated */
+    background-attachment: fixed;
+    /* Fix background during scrolling */
     /* -------------------------------------- */
 }
 
 
 .config-button {
-    position: fixed; /* Keep biutton fixed even on scrolling the page */
-    bottom: 20px;    /* 20 pixel from bottom */
-    right: 20px;     /* 20 pixel from right*/
-    background-color: transparent; /*backgournd color */
-    color: white;    /* Icon color */
+    position: fixed;
+    /* Keep biutton fixed even on scrolling the page */
+    bottom: 20px;
+    /* 20 pixel from bottom */
+    right: 20px;
+    /* 20 pixel from right*/
+    background-color: transparent;
+    /*backgournd color */
+    color: white;
+    /* Icon color */
     border: none;
-    border-radius: 50%; /* Make button rounded */
+    border-radius: 50%;
+    /* Make button rounded */
     width: 50px;
     height: 50px;
-    font-size: 24px; /* Icon's size */
+    font-size: 24px;
+    /* Icon's size */
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* add a shadow */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* add a shadow */
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .config-button:hover {
-    background-color:transparent; /* Change button color on mouse movement */
+    background-color: transparent;
+    /* Change button color on mouse movement */
 }
 
 .config-icon-img {
@@ -58,7 +71,7 @@ body {
     margin: 10px 0;
     z-index: 10;
     /* Aggiunge uno sfondo semi-trasparente per migliorare la leggibilità del testo */
-    background-color: rgba(255, 255, 255, 0.85); 
+    background-color: rgba(255, 255, 255, 0.85);
     padding: 10px;
     border-radius: 5px;
 }
@@ -81,28 +94,124 @@ body {
     justify-content: center;
     align-items: center;
     padding: 10px;
+    transition: opacity 0s 0.3s;
+    /* Wait 0.3s (half of 0.6s flip) then change opacity instantly */
+    opacity: 1;
+}
+
+#container.flipped #containerGamingStation {
+    opacity: 0;
+    transition: opacity 0s 0.3s;
+    /* Wait 0.3s then disappear */
+}
+
+
+main {
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Prevent scrolling if not needed */
 }
 
 #containerConfigStation {
     transform: rotateY(180deg);
     display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
+    flex-direction: column;
+    /* Organize vertically */
+    justify-content: space-between;
+    /* Space out header, content, and footer */
     align-items: center;
-    padding: 10px;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    /* Opaque background for readability */
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    /* Include padding in width/height */
+}
+
+.config-header {
+    width: 100%;
+    text-align: center;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.config-panels-slider {
+    flex-grow: 1;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    /* Hide non-active panels */
+    display: flex;
+    /* Use flexbox to center content */
+    justify-content: center;
+    align-items: flex-start;
+    /* Start from top */
+}
+
+.config-subpanel {
+    display: none;
+    /* Hidden by default */
+    width: 100%;
+    animation: fadeIn 0.5s;
+    /* Add a simple fade-in effect */
+}
+
+.config-subpanel.active {
+    display: block;
+    /* Show if active */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.config-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.dot {
+    height: 15px;
+    width: 15px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.dot.active,
+.dot:hover {
+    background-color: #007bff;
+    /* Active color matching theme */
 }
 
 .flipper {
     position: relative;
     width: 100%;
     height: 100%;
-    transition: transform 0.6s; /* La durata dell'animazione */
-    transform-style: preserve-3d; /* Fondamentale per l'effetto 3D */
+    transition: transform 0.6s;
+    /* La durata dell'animazione */
+    transform-style: preserve-3d;
+    /* Fondamentale per l'effetto 3D */
 }
 
 #container.flipped .flipper {
-    transform: rotateY(180deg); /* Ruota l'intero "flipper" di 180 gradi */
+    transform: rotateY(180deg);
+    /* Ruota l'intero "flipper" di 180 gradi */
 }
 
 #container {
@@ -123,42 +232,78 @@ body {
     align-items: center;
     color: rgb(97, 78, 78);
     font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s, width 0.3s, height 0.3s;
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat; /* Avoid image to be replicated */
-    flex-shrink: 0; /* Prevent shrinking */
-    min-width: 0; /* Reset min-width */
-    min-height: 0; /* Reset min-height */
-    box-sizing: border-box; /* Include padding and border in size */
-    overflow: hidden; /* Prevent content overflow */
-    padding: 5px; /* Add internal padding */
+    background-repeat: no-repeat;
+    /* Avoid image to be replicated */
+    flex-shrink: 0;
+    /* Prevent shrinking */
+    min-width: 0;
+    /* Reset min-width */
+    min-height: 0;
+    /* Reset min-height */
+    box-sizing: border-box;
+    /* Include padding and border in size */
+    overflow: hidden;
+    /* Prevent content overflow */
+    padding: 5px;
+    /* Add internal padding */
+    position: relative;
+    /* Ensure children can be positioned absolutely relative to this */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
-.block_station_top, .block_station_bottom {
-    width: calc(100% - 10px); /* Full width minus margins */
+.station-name {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* readable background */
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-align: center;
+    pointer-events: none;
+    /* Let clicks pass through if needed */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.block_station_top,
+.block_station_bottom {
+    width: calc(100% - 10px);
+    /* Full width minus margins */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     padding: 5px;
     margin: 2px 5px;
-    flex-shrink: 0; /* Prevent shrinking */
-    box-sizing: border-box; /* Include padding in size calculation */
+    flex-shrink: 0;
+    /* Prevent shrinking */
+    box-sizing: border-box;
+    /* Include padding in size calculation */
 }
 
 .block_station_top {
-    flex-grow: 0; /* Remove flex-grow to maintain square shape */
-    height: calc(25% - 4px); /* Fixed proportion minus margins */
+    flex-grow: 0;
+    /* Remove flex-grow to maintain square shape */
+    height: calc(25% - 4px);
+    /* Fixed proportion minus margins */
     border-bottom: 1px solid #ccc;
     background-color: rgba(240, 240, 240, 0.6);
     border-radius: 5px;
 }
 
 .block_station_bottom {
-    flex-grow: 0; /* Remove flex-grow to maintain square shape */
-    height: calc(75% - 4px); /* Fixed proportion minus margins */
-    background-color:rgba(224, 224, 224, 0.6);
+    flex-grow: 0;
+    /* Remove flex-grow to maintain square shape */
+    height: calc(75% - 4px);
+    /* Fixed proportion minus margins */
+    background-color: rgba(224, 224, 224, 0.6);
     border-radius: 5px;
 }
 
