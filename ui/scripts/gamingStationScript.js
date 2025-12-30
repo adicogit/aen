@@ -92,9 +92,43 @@ async function generateGamingBlocks() {
 
         const block_bottom = document.createElement('div');
         block_bottom.classList.add('block_station_bottom');
-        block_bottom.textContent = "prova sotto";
+        // block_bottom.textContent = "prova sotto"; // Already removed
 
-        // Add dedicated name element
+        // Status Logic
+        const status = gameStation.status; // 0: Started, 1: Stopped, 2: Suspended
+
+        // Helper to create icon
+        const createIcon = (type, color) => {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('status-icon');
+            wrapper.style.color = color;
+
+            let svgContent = '';
+            if (type === 'play') {
+                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M8 5v14l11-7z"/></svg>`;
+            } else if (type === 'pause') {
+                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+            } else if (type === 'stop') {
+                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 6h12v12H6z"/></svg>`;
+            }
+            wrapper.innerHTML = svgContent;
+            return wrapper;
+        };
+
+        // play in verde se lo stato di gameStation non è Stopped (1)
+        if (status === 1) {
+            block_bottom.appendChild(createIcon('play', '#28a745')); // Green
+        }
+
+        // il simbolo di pausa in giallo se lo stato è Started (0)
+        if (status === 0) {
+            block_bottom.appendChild(createIcon('pause', '#ffc107')); // Yellow
+        }
+
+        // simbolo di stop se lo stato è Suspended (2)
+        if (status === 2) {
+            block_bottom.appendChild(createIcon('stop', '#dc3545')); // Red
+        }
         const block_name = document.createElement('div');
         block_name.classList.add('station-name');
         block_name.textContent = gameStation.name;

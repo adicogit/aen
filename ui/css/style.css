@@ -305,6 +305,23 @@ main {
     /* Fixed proportion minus margins */
     background-color: rgba(224, 224, 224, 0.6);
     border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.status-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    /* Remove background to focus on icon size */
+    padding: 0;
+    height: 80%;
+    /* Fill most of the container height */
+    aspect-ratio: 1 / 1;
+    /* Keep it square */
 }
 
 .block:hover {
