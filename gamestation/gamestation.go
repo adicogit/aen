@@ -104,6 +104,13 @@ func (gs *GameStation) GetCheck() (payment.Check, error) {
 	return gs.payment.GetCheck()
 }
 
+// Return the temporary bill calculated for the payment. It's only a prediction and not the finall bill
+func (gs *GameStation) GetTemporaryCheck() payment.Check {
+	log.Log.Debug("Entering GetTemporaryCheck")
+	log.Log.Debug("Exiting GetTemporaryCheck")
+	return gs.payment.GetTemporaryCheck()
+}
+
 // Add new device. If device is already present it will not be added
 func (gs *GameStation) AddDevice(device devices.Device) {
 	log.Log.Debug("Entering AddConsumption")

@@ -24,8 +24,6 @@ func commonHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("Pragma", "no-cache")
-		w.Header().Set("Content-Security-Policy", "default-src 'self';")
-
 		next.ServeHTTP(w, r)
 	})
 }
@@ -44,7 +42,10 @@ func (server *Server) Start() error {
 
 	// API to handle game stations
 	router.HandleFunc("/api/v1/gamestations", server.getGameStations).Methods("GET")
+	//router.HandleFunc("/api/v1/gamestations", server.createGameStation).Methods("POST")
 	router.HandleFunc("/api/v1/gamestations/{gsID}", server.getGameStation).Methods("GET")
+	router.HandleFunc("/api/v1/gamestations/{gsID}/action", server.actionGameStation).Methods("POST")
+	router.HandleFunc("/api/v1/gamestations/{gsID}/status", server.getGameStationStatus).Methods("GET")
 
 	WebuiHandler.SetStaticPath(config.UIConfig.WebsiteDir)
 	router.PathPrefix("/").Handler(WebuiHandler)

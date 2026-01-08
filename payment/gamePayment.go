@@ -129,6 +129,31 @@ func (gp *GamePayment) GetCheck() (Check, error) {
 	return gp.check, nil
 }
 
+// Return the temporary bill calculated for the payment. It's only a prediction and not the finall bill
+func (gp *GamePayment) GetTemporaryCheck() Check {
+	log.Log.Debug("Entering GetTemporaryCheck")
+	duration := gp.previousDuration
+	if gp.status == Started {
+		duration += time.Since(gp.start)
+	}
+	if duration.Minutes() < float64(gp.configuration.MinimumDuration) {
+		duration = time.Duration(float64(gp.configuration.MinimumDuration) * float64(time.Minute))
+	}
+
+	result := Check{
+		Duration: int(duration.Minutes()),
+		Price:    int(duration.Minutes()) * gp.configuration.CostPerHour / 60,
+		ItemList: make([]warehouse.Item, len(gp.itemList)),
+	}
+	copy(result.ItemList, gp.itemList)
+	for _, item := range result.ItemList {
+		result.Price += item.PublicPrice
+	}
+
+	log.Log.Debug("Exiting GetCheGetTemporaryCheckck", "temporaryCheck", result)
+	return result
+}
+
 // Return the payment status
 func (gp *GamePayment) GetPaymentStatus() PaymentStatus {
 	log.Log.Debug("Entering GetPaymentStatus")

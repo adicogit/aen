@@ -18,6 +18,8 @@ type GamingStation interface {
 	AddConsumption(item warehouse.Item) error
 	// Return the bill calculated for the payment. It returns an error if the payment has not been closed
 	GetCheck() (payment.Check, error)
+	// Return the temporary bill calculated for the payment. It's only a prediction and not the finall bill
+	GetTemporaryCheck() payment.Check
 	// Add new device. If device is already present it will not be added
 	AddDevice(device devices.Device)
 	// Return list of devices associated to this GameStation

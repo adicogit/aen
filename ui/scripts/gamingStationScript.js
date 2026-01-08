@@ -110,6 +110,8 @@ async function generateGamingBlocks() {
                 svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
             } else if (type === 'stop') {
                 svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 6h12v12H6z"/></svg>`;
+            } else if (type === 'restart') {
+                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`;
             }
             wrapper.innerHTML = svgContent;
             return wrapper;
@@ -125,9 +127,14 @@ async function generateGamingBlocks() {
             block_bottom.appendChild(createIcon('pause', '#ffc107')); // Yellow
         }
 
-        // simbolo di stop se lo stato è Suspended (2)
+        // simbolo di stop (60%) o restart (40%) se lo stato è Suspended (2)
         if (status === 2) {
-            block_bottom.appendChild(createIcon('stop', '#dc3545')); // Red
+            const random = Math.random();
+            if (random < 0.6) {
+                block_bottom.appendChild(createIcon('stop', '#dc3545')); // Red - 60%
+            } else {
+                block_bottom.appendChild(createIcon('restart', '#17a2b8')); // Cyan - 40%
+            }
         }
         const block_name = document.createElement('div');
         block_name.classList.add('station-name');

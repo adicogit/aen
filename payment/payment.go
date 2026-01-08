@@ -37,6 +37,8 @@ type Payment interface {
 	PauseCountingPayment() error
 	// Return the bill calculated for the payment. It returns an error if the payment has not been closed
 	GetCheck() (Check, error)
+	// Return the temporary bill calculated for the payment. It's only a prediction and not the finall bill
+	GetTemporaryCheck() (Check, error)
 	// Return the payment status
 	GetPaymentStatus() PaymentStatus
 	// Add a consumprion to current payment. If payment is n stoppes status it reruns error
