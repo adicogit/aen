@@ -21,6 +21,7 @@ type gamestationProp struct {
 	IconPath   string           `json:"iconPath"`
 	Name       string           `json:"name"`
 	Status     int              `json:"status"`
+	Cost       int              `json:"cost"`
 	DeviceList []deviceListProp `json:"deviceList"`
 }
 
@@ -69,6 +70,7 @@ func (server *Server) getGameStation(w http.ResponseWriter, r *http.Request) {
 		ID:       gs.GetID(),
 		Name:     gs.GetName(),
 		Status:   int(gs.GetStatus()),
+		Cost:     gs.GetTemporaryCheck().Price,
 		IconPath: gs.GetIconPath(),
 	}
 	log.Log.Debug("Exiting getGameStation", "result", result)

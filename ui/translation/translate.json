@@ -13,7 +13,10 @@
     "settings_title": "Impostazioni",
     "subpanel_1_title": "Generale",
     "subpanel_2_title": "Video",
-    "subpanel_3_title": "Sistema"
+    "subpanel_3_title": "Sistema",
+    "api_error": "Errore API",
+    "action_failed": "Azione fallita",
+    "network_error": "Errore di rete"
   },
   "en": {
     "welcome_title": "Billiard Manager",
@@ -29,6 +32,9 @@
     "settings_title": "Settings",
     "subpanel_1_title": "General",
     "subpanel_2_title": "Video",
-    "subpanel_3_title": "System"
+    "subpanel_3_title": "System",
+    "api_error": "API Error",
+    "action_failed": "Action failed",
+    "network_error": "Network error"
   }
 }
