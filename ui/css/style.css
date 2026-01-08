@@ -273,8 +273,8 @@ main {
     -webkit-backface-visibility: hidden;
 }
 
-.block_station_top,
-.block_station_bottom {
+.block_station_price,
+.block_station_status {
     width: calc(100% - 10px);
     /* Full width minus margins */
     overflow: hidden;
@@ -288,7 +288,7 @@ main {
     /* Include padding in size calculation */
 }
 
-.block_station_top {
+.block_station_price {
     flex-grow: 0;
     /* Remove flex-grow to maintain square shape */
     height: calc(25% - 4px);
@@ -306,7 +306,7 @@ main {
     line-height: 1;
 }
 
-.block_station_bottom {
+.block_station_status {
     flex-grow: 0;
     /* Remove flex-grow to maintain square shape */
     height: calc(75% - 4px);
@@ -317,6 +317,33 @@ main {
     justify-content: center;
     align-items: center;
     gap: 15px;
+    position: relative;
+}
+
+.consumption-icon {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    color: #007bff;
+}
+
+.consumption-icon:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.consumption-icon svg {
+    width: 70%;
+    height: 70%;
 }
 
 .status-icon {
@@ -330,6 +357,26 @@ main {
     /* Fill most of the container height */
     aspect-ratio: 1 / 1;
     /* Keep it square */
+}
+
+.suspended-icons-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    gap: 5px;
+}
+
+.suspended-icons-container .status-icon.stop-icon {
+    height: 70%;
+    width: auto;
+}
+
+.suspended-icons-container .status-icon.restart-icon {
+    height: 30%;
+    width: auto;
 }
 
 .block:hover {

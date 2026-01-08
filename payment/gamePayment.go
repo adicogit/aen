@@ -35,11 +35,11 @@ func New(config config.PaymentConfiguration) GamePayment {
 	}
 }
 
-// Set the confguration for the payment system
+// Set the configuration for the payment system
 func (gp *GamePayment) ConfigurePayment(config config.PaymentConfiguration) {
 	log.Log.Debug("Entering ConfigurePayment")
 	gp.configuration = config
-	log.Log.Debug("Entering ConfigurePayment")
+	log.Log.Debug("Exiting ConfigurePayment")
 }
 
 // Start new payment by starting counting the time. It returns an error if the payment is neither in a stopped nor in suspended status
@@ -52,11 +52,18 @@ func (gp *GamePayment) StartCountingPayment() error {
 		log.Log.Debug("Exiting StartCountingPayment")
 		return err
 	}
-	// Start a new payment
+
+	// Only reset check and itemList if starting from Stopped (new payment)
+	// If resuming from Suspended, preserve the existing itemList
+	if gp.status == Stopped {
+		gp.check = Check{}
+		gp.itemList = make([]warehouse.Item, 0)
+		gp.previousDuration = time.Duration(0)
+	}
+
+	// Start or resume payment
 	gp.start = time.Now()
 	gp.status = Started
-	gp.check = Check{}
-	gp.itemList = make([]warehouse.Item, 0)
 
 	log.Log.Info("New payment has been started")
 	log.Log.Debug("Exiting StartCountingPayment")
@@ -106,11 +113,11 @@ func (gp *GamePayment) PauseCountingPayment() error {
 		log.Log.Debug("Exiting PauseCountingPayment")
 		return err
 	}
-	gp.previousDuration = time.Since(gp.start)
+	gp.previousDuration += time.Since(gp.start)
 	gp.status = Suspended
 
 	log.Log.Info("Payment has been paused")
-	log.Log.Debug("Exiting ClosePayment")
+	log.Log.Debug("Exiting PauseCountingPayment")
 	return nil
 }
 
@@ -118,7 +125,7 @@ func (gp *GamePayment) PauseCountingPayment() error {
 func (gp *GamePayment) GetCheck() (Check, error) {
 	log.Log.Debug("Entering GetCheck")
 	if gp.status != Stopped {
-		err := errors.New("can not return check for this mayment becaus it has not been closed. Please close it")
+		err := errors.New("can not return check for this payment because it has not been closed. Please close it")
 		log.Log.Error(err.Error())
 		log.Log.Debug("Exiting GetCheck")
 		return Check{}, err
@@ -129,7 +136,7 @@ func (gp *GamePayment) GetCheck() (Check, error) {
 	return gp.check, nil
 }
 
-// Return the temporary bill calculated for the payment. It's only a prediction and not the finall bill
+// Return the temporary bill calculated for the payment. It's only a prediction and not the final bill
 func (gp *GamePayment) GetTemporaryCheck() Check {
 	log.Log.Debug("Entering GetTemporaryCheck")
 	if gp.GetPaymentStatus() == Stopped {
@@ -159,7 +166,7 @@ func (gp *GamePayment) GetTemporaryCheck() Check {
 		result.Price += item.PublicPrice
 	}
 
-	log.Log.Debug("Exiting GetCheGetTemporaryCheckck", "temporaryCheck", result)
+	log.Log.Debug("Exiting GetTemporaryCheck", "temporaryCheck", result)
 	return result
 }
 
@@ -170,7 +177,7 @@ func (gp *GamePayment) GetPaymentStatus() PaymentStatus {
 	return gp.status
 }
 
-// Add a consumprion to current payment. If payment is n stoppes status it reruns error
+// Add a consumption to current payment. If payment is in stopped status it returns error
 func (gp *GamePayment) AddConsumption(item warehouse.Item) error {
 	log.Log.Debug("Entering AddConsumption")
 	if gp.status == Stopped {
@@ -184,3 +191,5 @@ func (gp *GamePayment) AddConsumption(item warehouse.Item) error {
 	log.Log.Debug("Exiting AddConsumption")
 	return nil
 }
+
+// Made with Bob

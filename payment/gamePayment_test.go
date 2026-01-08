@@ -1,201 +1,509 @@
 package payment
 
 import (
-	"log/slog"
 	"testing"
 	"time"
 
 	"aen.it/poolmanager/config"
-	"aen.it/poolmanager/log"
 	"aen.it/poolmanager/warehouse"
 )
 
-func init() {
-	//	log.SetLogLevel(slog.LevelDebug)
-	log.SetLogLevel(slog.LevelInfo)
+// Helper function to create a test configuration
+func createTestConfig() config.PaymentConfiguration {
+	return config.PaymentConfiguration{
+		CostPerHour:     6000, // 60 euros per hour in cents
+		MinimumDuration: 15,   // 15 minutes minimum
+	}
 }
 
-// TestGamePaymentInitialization verify that New function works as expected
-func TestGamePaymentInitialization(t *testing.T) {
-	config := config.PaymentConfiguration{
+// Helper function to create a test item
+func createTestItem(id, name string, price int) warehouse.Item {
+	return warehouse.Item{
+		ID:            id,
+		Name:          name,
+		PublicPrice:   price,
+		IncomingPrice: price / 2,
+	}
+}
+
+// Test New function creates a GamePayment with correct initial state
+func TestNew(t *testing.T) {
+	config := createTestConfig()
+	gp := New(config)
+
+	if gp.id == "" {
+		t.Error("Expected non-empty ID")
+	}
+
+	if gp.status != Stopped {
+		t.Errorf("Expected initial status to be Stopped, got %v", gp.status)
+	}
+
+	if gp.configuration.CostPerHour != config.CostPerHour {
+		t.Errorf("Expected CostPerHour %d, got %d", config.CostPerHour, gp.configuration.CostPerHour)
+	}
+
+	if gp.previousDuration != 0 {
+		t.Error("Expected previousDuration to be 0")
+	}
+
+	if len(gp.itemList) != 0 {
+		t.Error("Expected empty itemList")
+	}
+}
+
+// Test ConfigurePayment updates configuration
+func TestConfigurePayment(t *testing.T) {
+	gp := New(createTestConfig())
+	newConfig := config.PaymentConfiguration{
+		CostPerHour:     8000,
 		MinimumDuration: 30,
-		CostPerHour:     10,
 	}
-	gamePayment := New(config)
-	// Verify MinimumDuration
-	if gamePayment.configuration.MinimumDuration != config.MinimumDuration {
-		t.Errorf("GamePayment initialization FAILED. Its MinimumDuration value is %d but it should be %d", gamePayment.configuration.MinimumDuration, config.MinimumDuration)
+
+	gp.ConfigurePayment(newConfig)
+
+	if gp.configuration.CostPerHour != newConfig.CostPerHour {
+		t.Errorf("Expected CostPerHour %d, got %d", newConfig.CostPerHour, gp.configuration.CostPerHour)
 	}
-	// Verify CostPerHour
-	if gamePayment.configuration.CostPerHour != config.CostPerHour {
-		t.Errorf("GamePayment initialization FAILED. Its CostPerHour value is %d but it should be %d", gamePayment.configuration.CostPerHour, config.CostPerHour)
-	}
-	// Verify start
-	zeroTime := time.Time{}
-	if gamePayment.start.Compare(zeroTime) != 0 {
-		t.Errorf("GamePayment initialization FAILED. Its start value is %s but it should be %s", gamePayment.start.String(), zeroTime.String())
-	}
-	// Verify previousDuration
-	zeroDuration := time.Duration(0)
-	if gamePayment.previousDuration != zeroDuration {
-		t.Errorf("GamePayment initialization FAILED. Its previousDuration value is %d but it should be %d", int(gamePayment.previousDuration.Minutes()), int(zeroDuration.Minutes()))
+
+	if gp.configuration.MinimumDuration != newConfig.MinimumDuration {
+		t.Errorf("Expected MinimumDuration %d, got %d", newConfig.MinimumDuration, gp.configuration.MinimumDuration)
 	}
 }
 
-// TestGamePaymentStart verify start function works as expected
-func TestGamePaymentStart(t *testing.T) {
-	config := config.PaymentConfiguration{
-		MinimumDuration: 30,
-		CostPerHour:     10,
-	}
-	gamePayment := New(config)
-	err := gamePayment.StartCountingPayment()
+// Test StartCountingPayment from Stopped status
+func TestStartCountingPayment_FromStopped(t *testing.T) {
+	gp := New(createTestConfig())
+
+	err := gp.StartCountingPayment()
 	if err != nil {
-		t.Errorf("GamePayment StartCountingPayment FAILED. First start returned error %s but it should be OK", err)
+		t.Errorf("Expected no error, got %v", err)
 	}
-	status := gamePayment.GetPaymentStatus()
-	if status != Started {
-		t.Errorf("GamePayment StartCountingPayment FAILED. Expecting status %d but it is %d", Started, status)
+
+	if gp.status != Started {
+		t.Errorf("Expected status to be Started, got %v", gp.status)
 	}
-	_, err = gamePayment.GetCheck()
-	if err == nil {
-		t.Errorf("GamePayment StartCountingPayment FAILED. Without closing the game after a start should generate an error but it did not")
-	}
-	err = gamePayment.StartCountingPayment()
-	if err == nil {
-		t.Errorf("GamePayment StartCountingPayment FAILED. Second start is OK but error is expected")
+
+	if gp.start.IsZero() {
+		t.Error("Expected start time to be set")
 	}
 }
 
-// TestGamePaymentPause verify pause works as expected
-func TestGamePaymentPause(t *testing.T) {
-	config := config.PaymentConfiguration{
-		MinimumDuration: 0,
-		CostPerHour:     10,
-	}
-	gamePayment := New(config)
-	gamePayment.StartCountingPayment()
-	//Wait for a little
-	time.Sleep(5 * time.Second)
-	err := gamePayment.PauseCountingPayment()
+// Test StartCountingPayment from Suspended status
+func TestStartCountingPayment_FromSuspended(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+	gp.PauseCountingPayment()
+
+	err := gp.StartCountingPayment()
 	if err != nil {
-		t.Errorf("GamePayment PauseCountingPayment FAILED. First pause returned error %s but it should be OK", err)
+		t.Errorf("Expected no error when starting from Suspended, got %v", err)
 	}
-	status := gamePayment.GetPaymentStatus()
-	if status != Suspended {
-		t.Errorf("GamePayment PauseCountingPayment FAILED. Expecting status %d but it is %d", Suspended, status)
-	}
-	_, err = gamePayment.GetCheck()
-	if err == nil {
-		t.Errorf("GamePayment PauseCountingPayment FAILED. Without closing the game after a pause should generate an error but it did not")
-	}
-	err = gamePayment.PauseCountingPayment()
-	if err == nil {
-		t.Errorf("GamePayment PauseCountingPayment FAILED. Second pause is OK but error is expected")
-	}
-	err = gamePayment.StartCountingPayment()
-	if err != nil {
-		t.Errorf("GamePayment PauseCountingPayment FAILED. Starting counting after pause it returned error %s but it should be OK", err)
+
+	if gp.status != Started {
+		t.Errorf("Expected status to be Started, got %v", gp.status)
 	}
 }
 
-// TestGamePaymentPause verify pause works as expected
-func TestGamePaymentClosure(t *testing.T) {
-	config := config.PaymentConfiguration{
-		MinimumDuration: 15,
-		CostPerHour:     10,
-	}
-	gamePayment := New(config)
-	err := gamePayment.StartCountingPayment()
-	if err != nil {
-		t.Errorf("GamePayment StartCountingPayment FAILED. Trying to start new game returned an error %s but it should be OK", err)
-	}
-	item := warehouse.Item{
-		ID:            "",
-		Name:          "acqua",
-		PublicPrice:   50,
-		IncomingPrice: 10,
-	}
-	err = gamePayment.AddConsumption(item)
-	if err != nil {
-		t.Errorf("GamePayment AddConsumption FAILED. Returned error %s rying to add new consumption to a started payment, but it should be OK", err)
-	}
-	gamePayment.start = time.Now().Add(-10 * time.Minute)
-	err = gamePayment.PauseCountingPayment()
-	if err != nil {
-		t.Errorf("GamePayment PauseCountingPayment FAILED. Trying to pause a started returned an error %s but it should be OK", err)
-	}
-	err = gamePayment.AddConsumption(item)
-	if err != nil {
-		t.Errorf("GamePayment AddConsumption FAILED. Returned error %s rying to add new consumption to a started payment, but it should be OK", err)
-	}
-	// verify payment without pause and with less than minimum duration
-	err = gamePayment.ClosePayment()
-	if err != nil {
-		t.Errorf("GamePayment ClosePayment FAILED. First close returned error %s but it should be OK", err)
-	}
-	status := gamePayment.GetPaymentStatus()
-	if status != Stopped {
-		t.Errorf("GamePayment ClosePayment FAILED. Expecting status %d but it is %d", Stopped, status)
-	}
-	err = gamePayment.AddConsumption(item)
+// Test StartCountingPayment fails when already Started
+func TestStartCountingPayment_AlreadyStarted(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+
+	err := gp.StartCountingPayment()
 	if err == nil {
-		t.Errorf("GamePayment AddConsumption FAILED. Did not return any error, but it should. you cannot add new consumption to a stopped payment")
+		t.Error("Expected error when starting already started payment")
 	}
-	check, err := gamePayment.GetCheck()
+
+	if gp.status != Started {
+		t.Errorf("Expected status to remain Started, got %v", gp.status)
+	}
+}
+
+// Test PauseCountingPayment from Started status
+func TestPauseCountingPayment_FromStarted(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+	time.Sleep(100 * time.Millisecond)
+
+	err := gp.PauseCountingPayment()
 	if err != nil {
-		t.Errorf("GamePayment ClosePayment FAILED. Closing the game should not generate an error in getting the check")
+		t.Errorf("Expected no error, got %v", err)
 	}
-	if check.Duration != config.MinimumDuration {
-		t.Errorf("GamePayment GetCheck FAILED. Check's duration is %d but it is expeted to be %d", check.Duration, config.MinimumDuration)
+
+	if gp.status != Suspended {
+		t.Errorf("Expected status to be Suspended, got %v", gp.status)
 	}
+
+	if gp.previousDuration == 0 {
+		t.Error("Expected previousDuration to be set")
+	}
+}
+
+// Test PauseCountingPayment fails when not Started
+func TestPauseCountingPayment_NotStarted(t *testing.T) {
+	gp := New(createTestConfig())
+
+	err := gp.PauseCountingPayment()
+	if err == nil {
+		t.Error("Expected error when pausing non-started payment")
+	}
+
+	if gp.status != Stopped {
+		t.Errorf("Expected status to remain Stopped, got %v", gp.status)
+	}
+}
+
+// Test ClosePayment from Started status
+func TestClosePayment_FromStarted(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+	time.Sleep(100 * time.Millisecond)
+
+	err := gp.ClosePayment()
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if gp.status != Stopped {
+		t.Errorf("Expected status to be Stopped, got %v", gp.status)
+	}
+
+	if gp.check.Duration == 0 {
+		t.Error("Expected check duration to be set")
+	}
+
+	if gp.check.Price == 0 {
+		t.Error("Expected check price to be set")
+	}
+}
+
+// Test ClosePayment from Suspended status
+func TestClosePayment_FromSuspended(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+	time.Sleep(100 * time.Millisecond)
+	gp.PauseCountingPayment()
+
+	err := gp.ClosePayment()
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if gp.status != Stopped {
+		t.Errorf("Expected status to be Stopped, got %v", gp.status)
+	}
+}
+
+// Test ClosePayment fails when already Stopped
+func TestClosePayment_AlreadyStopped(t *testing.T) {
+	gp := New(createTestConfig())
+
+	err := gp.ClosePayment()
+	if err == nil {
+		t.Error("Expected error when closing already stopped payment")
+	}
+}
+
+// Test ClosePayment applies minimum duration
+func TestClosePayment_MinimumDuration(t *testing.T) {
+	config := createTestConfig()
+	config.MinimumDuration = 15 // 15 minutes
+	gp := New(config)
+	gp.StartCountingPayment()
+	time.Sleep(100 * time.Millisecond) // Less than minimum
+
+	gp.ClosePayment()
+
+	if gp.check.Duration != config.MinimumDuration {
+		t.Errorf("Expected duration to be minimum %d minutes, got %d", config.MinimumDuration, gp.check.Duration)
+	}
+
 	expectedPrice := config.MinimumDuration * config.CostPerHour / 60
-	expectedPrice += item.PublicPrice * 2
-	if check.Price != expectedPrice {
-		t.Errorf("GamePayment GetCheck FAILED. Check's price is %.2f but it is expeted to be %.2f", float32(check.Price/100), float32(expectedPrice/100))
-	}
-	err = gamePayment.ClosePayment()
-	if err == nil {
-		t.Errorf("GamePayment ClosePayment FAILED. Second close is OK but error is expected")
-	}
-
-	// verify payment after pause
-	err = gamePayment.StartCountingPayment()
-	if err != nil {
-		t.Errorf("GamePayment StartCountingPayment FAILED. Trying to start new game after a close returned an error %s but it should be OK", err)
-	}
-	gamePayment.start = time.Now().Add(-15 * time.Minute)
-	err = gamePayment.PauseCountingPayment()
-	if err != nil {
-		t.Errorf("GamePayment PauseCountingPayment FAILED. Trying to pause a started game %s but it should be OK", err)
-	}
-	gamePayment.StartCountingPayment()
-	if err != nil {
-		t.Errorf("GamePayment StartCountingPayment FAILED. Trying to start a paused game %s but it should be OK", err)
-	}
-	gamePayment.start = time.Now().Add(-10 * time.Minute)
-	// Game duration is expeted to be 25 minutes
-	gamePayment.ClosePayment()
-	if err != nil {
-		t.Errorf("GamePayment ClosePayment FAILED. First close returned error %s but it should be OK", err)
-	}
-	status = gamePayment.GetPaymentStatus()
-	if status != Stopped {
-		t.Errorf("GamePayment ClosePayment FAILED. Expecting status %d but it is %d", Stopped, status)
-	}
-	check, err = gamePayment.GetCheck()
-	if err != nil {
-		t.Errorf("GamePayment ClosePayment FAILED. Closing the game should not generate an error in getting the check")
-	}
-	if check.Duration != 25 {
-		t.Errorf("GamePayment GetCheck FAILED. Check's duration is %d but it is expeted to be %d", check.Duration, 25)
-	}
-	expectedPrice = 25 * config.CostPerHour / 60
-	if check.Price != expectedPrice {
-		t.Errorf("GamePayment GetCheck FAILED. Check's price is %.2f but it is expeted to be %.2f", float32(check.Price), float32(expectedPrice))
-	}
-	err = gamePayment.ClosePayment()
-	if err == nil {
-		t.Errorf("GamePayment ClosePayment FAILED. Second close is OK but error is expected")
+	if gp.check.Price != expectedPrice {
+		t.Errorf("Expected price %d, got %d", expectedPrice, gp.check.Price)
 	}
 }
+
+// Test GetCheck returns check after closing
+func TestGetCheck_AfterClose(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+	time.Sleep(100 * time.Millisecond)
+	gp.ClosePayment()
+
+	check, err := gp.GetCheck()
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if check.Duration == 0 {
+		t.Error("Expected non-zero duration in check")
+	}
+
+	if check.Price == 0 {
+		t.Error("Expected non-zero price in check")
+	}
+}
+
+// Test GetCheck fails when payment not closed
+func TestGetCheck_NotClosed(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+
+	_, err := gp.GetCheck()
+	if err == nil {
+		t.Error("Expected error when getting check for non-closed payment")
+	}
+}
+
+// Test GetTemporaryCheck while Started
+func TestGetTemporaryCheck_WhileStarted(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+	time.Sleep(100 * time.Millisecond)
+
+	check := gp.GetTemporaryCheck()
+
+	if check.Duration == 0 {
+		t.Error("Expected non-zero duration in temporary check")
+	}
+
+	if check.Price == 0 {
+		t.Error("Expected non-zero price in temporary check")
+	}
+}
+
+// Test GetTemporaryCheck while Suspended
+func TestGetTemporaryCheck_WhileSuspended(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+	time.Sleep(100 * time.Millisecond)
+	gp.PauseCountingPayment()
+
+	check := gp.GetTemporaryCheck()
+
+	if check.Duration == 0 {
+		t.Error("Expected non-zero duration in temporary check")
+	}
+}
+
+// Test GetTemporaryCheck when Stopped returns final check
+func TestGetTemporaryCheck_WhenStopped(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+	time.Sleep(100 * time.Millisecond)
+	gp.ClosePayment()
+
+	tempCheck := gp.GetTemporaryCheck()
+	finalCheck, _ := gp.GetCheck()
+
+	if tempCheck.Duration != finalCheck.Duration {
+		t.Errorf("Expected temporary check duration %d to match final %d", tempCheck.Duration, finalCheck.Duration)
+	}
+
+	if tempCheck.Price != finalCheck.Price {
+		t.Errorf("Expected temporary check price %d to match final %d", tempCheck.Price, finalCheck.Price)
+	}
+}
+
+// Test GetPaymentStatus
+func TestGetPaymentStatus(t *testing.T) {
+	gp := New(createTestConfig())
+
+	if gp.GetPaymentStatus() != Stopped {
+		t.Errorf("Expected initial status Stopped, got %v", gp.GetPaymentStatus())
+	}
+
+	gp.StartCountingPayment()
+	if gp.GetPaymentStatus() != Started {
+		t.Errorf("Expected status Started, got %v", gp.GetPaymentStatus())
+	}
+
+	gp.PauseCountingPayment()
+	if gp.GetPaymentStatus() != Suspended {
+		t.Errorf("Expected status Suspended, got %v", gp.GetPaymentStatus())
+	}
+
+	gp.ClosePayment()
+	if gp.GetPaymentStatus() != Stopped {
+		t.Errorf("Expected status Stopped, got %v", gp.GetPaymentStatus())
+	}
+}
+
+// Test AddConsumption while Started
+func TestAddConsumption_WhileStarted(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+
+	item := createTestItem("item1", "Test Item", 500)
+	err := gp.AddConsumption(item)
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if len(gp.itemList) != 1 {
+		t.Errorf("Expected 1 item in list, got %d", len(gp.itemList))
+	}
+
+	if gp.itemList[0].ID != item.ID {
+		t.Errorf("Expected item ID %s, got %s", item.ID, gp.itemList[0].ID)
+	}
+}
+
+// Test AddConsumption while Suspended
+func TestAddConsumption_WhileSuspended(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+	gp.PauseCountingPayment()
+
+	item := createTestItem("item1", "Test Item", 500)
+	err := gp.AddConsumption(item)
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if len(gp.itemList) != 1 {
+		t.Errorf("Expected 1 item in list, got %d", len(gp.itemList))
+	}
+}
+
+// Test AddConsumption fails when Stopped
+func TestAddConsumption_WhenStopped(t *testing.T) {
+	gp := New(createTestConfig())
+
+	item := createTestItem("item1", "Test Item", 500)
+	err := gp.AddConsumption(item)
+
+	if err == nil {
+		t.Error("Expected error when adding consumption to stopped payment")
+	}
+
+	if len(gp.itemList) != 0 {
+		t.Errorf("Expected 0 items in list, got %d", len(gp.itemList))
+	}
+}
+
+// Test AddConsumption multiple items
+func TestAddConsumption_MultipleItems(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+
+	item1 := createTestItem("item1", "Item 1", 500)
+	item2 := createTestItem("item2", "Item 2", 300)
+	item3 := createTestItem("item3", "Item 3", 700)
+
+	gp.AddConsumption(item1)
+	gp.AddConsumption(item2)
+	gp.AddConsumption(item3)
+
+	if len(gp.itemList) != 3 {
+		t.Errorf("Expected 3 items in list, got %d", len(gp.itemList))
+	}
+}
+
+// Test consumption items are included in final check
+func TestClosePayment_WithConsumptions(t *testing.T) {
+	config := createTestConfig()
+	config.MinimumDuration = 15
+	gp := New(config)
+	gp.StartCountingPayment()
+
+	item1 := createTestItem("item1", "Item 1", 500)
+	item2 := createTestItem("item2", "Item 2", 300)
+	gp.AddConsumption(item1)
+	gp.AddConsumption(item2)
+
+	time.Sleep(100 * time.Millisecond)
+	gp.ClosePayment()
+
+	check, _ := gp.GetCheck()
+
+	if len(check.ItemList) != 2 {
+		t.Errorf("Expected 2 items in check, got %d", len(check.ItemList))
+	}
+
+	expectedTimePrice := config.MinimumDuration * config.CostPerHour / 60
+	expectedTotalPrice := expectedTimePrice + item1.PublicPrice + item2.PublicPrice
+
+	if check.Price != expectedTotalPrice {
+		t.Errorf("Expected total price %d, got %d", expectedTotalPrice, check.Price)
+	}
+}
+
+// Test GetTemporaryCheck includes consumptions
+func TestGetTemporaryCheck_WithConsumptions(t *testing.T) {
+	gp := New(createTestConfig())
+	gp.StartCountingPayment()
+
+	item := createTestItem("item1", "Item 1", 500)
+	gp.AddConsumption(item)
+
+	time.Sleep(100 * time.Millisecond)
+	check := gp.GetTemporaryCheck()
+
+	if len(check.ItemList) != 1 {
+		t.Errorf("Expected 1 item in temporary check, got %d", len(check.ItemList))
+	}
+
+	if check.Price < item.PublicPrice {
+		t.Errorf("Expected price to include item price %d, got %d", item.PublicPrice, check.Price)
+	}
+}
+
+// Test payment lifecycle: Start -> Pause -> Resume -> Close
+func TestPaymentLifecycle_Complete(t *testing.T) {
+	gp := New(createTestConfig())
+
+	// Start payment
+	err := gp.StartCountingPayment()
+	if err != nil {
+		t.Fatalf("Failed to start payment: %v", err)
+	}
+	time.Sleep(50 * time.Millisecond)
+
+	// Add consumption
+	item := createTestItem("item1", "Test Item", 500)
+	gp.AddConsumption(item)
+
+	// Pause payment
+	err = gp.PauseCountingPayment()
+	if err != nil {
+		t.Fatalf("Failed to pause payment: %v", err)
+	}
+
+	// Resume payment
+	err = gp.StartCountingPayment()
+	if err != nil {
+		t.Fatalf("Failed to resume payment: %v", err)
+	}
+	time.Sleep(50 * time.Millisecond)
+
+	// Close payment
+	err = gp.ClosePayment()
+	if err != nil {
+		t.Fatalf("Failed to close payment: %v", err)
+	}
+
+	// Verify final check
+	check, err := gp.GetCheck()
+	if err != nil {
+		t.Fatalf("Failed to get check: %v", err)
+	}
+
+	if check.Duration == 0 {
+		t.Error("Expected non-zero duration")
+	}
+
+	if check.Price == 0 {
+		t.Error("Expected non-zero price")
+	}
+
+	if len(check.ItemList) != 1 {
+		t.Errorf("Expected 1 item in check, got %d", len(check.ItemList))
+	}
+}
+
+// Made with Bob

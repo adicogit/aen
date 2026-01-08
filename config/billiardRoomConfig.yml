@@ -6,7 +6,7 @@ items:
     publicPrice: 100
 
 defaultPayment: &defaultPayment
-  minimumDuration: 30
+  minimumDuration: 0
   costPerHour: 1200
 
 gamingStations:

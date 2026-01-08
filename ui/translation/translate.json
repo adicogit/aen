@@ -16,7 +16,8 @@
     "subpanel_3_title": "Sistema",
     "api_error": "Errore API",
     "action_failed": "Azione fallita",
-    "network_error": "Errore di rete"
+    "network_error": "Errore di rete",
+    "add_consumption": "Aggiungi consumazione"
   },
   "en": {
     "welcome_title": "Billiard Manager",
@@ -35,6 +36,7 @@
     "subpanel_3_title": "System",
     "api_error": "API Error",
     "action_failed": "Action failed",
-    "network_error": "Network error"
+    "network_error": "Network error",
+    "add_consumption": "Add consumption"
   }
 }
