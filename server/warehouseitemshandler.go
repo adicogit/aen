@@ -151,6 +151,20 @@ func (server *Server) createWarehouseItems(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	if req.PublicPrice < 0 {
+		log.Log.Error("PublicPrice must be non-negative")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(errorResponse{Error: "PublicPrice must be non-negative"})
+		return
+	}
+
+	if req.IncomingPrice < 0 {
+		log.Log.Error("IncomingPrice must be non-negative")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(errorResponse{Error: "IncomingPrice must be non-negative"})
+		return
+	}
+
 	// Create the item
 	item := warehouse.Item{
 		ID:            req.ID,
@@ -195,6 +209,20 @@ func (server *Server) modifyWarehouseItems(w http.ResponseWriter, r *http.Reques
 		log.Log.Error("Item name is required")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(errorResponse{Error: "Item name is required"})
+		return
+	}
+
+	if req.PublicPrice < 0 {
+		log.Log.Error("PublicPrice must be non-negative")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(errorResponse{Error: "PublicPrice must be non-negative"})
+		return
+	}
+
+	if req.IncomingPrice < 0 {
+		log.Log.Error("IncomingPrice must be non-negative")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(errorResponse{Error: "IncomingPrice must be non-negative"})
 		return
 	}
 

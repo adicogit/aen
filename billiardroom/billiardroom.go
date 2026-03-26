@@ -8,15 +8,15 @@ import (
 type BilliardRoom interface {
 	// Returns number of generic gaming station
 	GetNumberOfGamingStation() int
-	// Returns list og Gaming Station's IDs
+	// Returns list of Gaming Station's IDs
 	GetGamingStationIDs() []string
-	// Retturns required gaming station
+	// Returns required gaming station
 	GetGamingStation(id string) (gamestation.GamingStation, error)
 	// Add new Gaming station to the list
 	AddGamingStation(gs gamestation.GamingStation) error
 	// Returns number of available items
 	GetNumberOfItems() int
-	// Returns list og items's IDs
+	// Returns list of items's IDs
 	GetItemIDs() []string
 	// Returns required item
 	GetItem(id string) (warehouse.Item, error)

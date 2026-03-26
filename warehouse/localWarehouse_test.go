@@ -14,7 +14,7 @@ func init() {
 
 // TestLocalWarehouseInitialization verify that New function works as expected
 func TestLocalWarehouseInitialization(t *testing.T) {
-	warehouse := NewLocalWahouse()
+	warehouse := NewLocalWarehouse()
 	if err := uuid.Validate(warehouse.id); err != nil {
 		t.Errorf("New created warehouse does not have a valid UUID: %s", warehouse.id)
 	}
@@ -32,7 +32,7 @@ func TestLocalWarehouseAddItem(t *testing.T) {
 		PublicPrice:   200,
 		IncomingPrice: 200,
 	}
-	warehouse := NewLocalWahouse()
+	warehouse := NewLocalWarehouse()
 	warehouse.AddItems(item, 10)
 	itemsLen := len(warehouse.GetItemIDs())
 	if itemsLen != 1 {
@@ -68,7 +68,7 @@ func TestLocalWarehouseRemoveItem(t *testing.T) {
 		PublicPrice:   200,
 		IncomingPrice: 200,
 	}
-	warehouse := NewLocalWahouse()
+	warehouse := NewLocalWarehouse()
 	warehouse.AddItems(item, 10)
 	error := warehouse.RemoveItems(item.ID, 3)
 	if error != nil {
@@ -94,7 +94,7 @@ func TestLocalWarehouseRemoveItem(t *testing.T) {
 
 // TestLocalWarehouseItemTypesCount verify that GetItemTypesCount function works as expected
 func TestLocalWarehouseItemTypesCount(t *testing.T) {
-	warehouse := NewLocalWahouse()
+	warehouse := NewLocalWarehouse()
 
 	item := Item{
 		ID:            uuid.NewString(),

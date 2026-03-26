@@ -2,6 +2,7 @@ package billiardroom
 
 import (
 	"fmt"
+	"sync"
 
 	"aen.it/poolmanager/config"
 	"aen.it/poolmanager/gamestation"
@@ -10,8 +11,9 @@ import (
 )
 
 type manager struct {
+	mu           sync.RWMutex
 	name         string
-	backgound    string
+	background   string
 	gameStations map[string]gamestation.GamingStation
 	items        map[string]warehouse.Item
 	itemQuantity map[string]int
@@ -53,26 +55,30 @@ func (manage *manager) loadFromConfig() {
 // Returns number of generic gaming station
 func (manage *manager) GetNumberOfGamingStation() int {
 	log.Log.Debug("Entering GetNumberOfGamingStation")
+	manage.mu.RLock()
+	defer manage.mu.RUnlock()
 	log.Log.Debug("Exiting GetNumberOfGamingStation")
 	return len(manage.gameStations)
 }
 
-// Returns list og Gaming Station's IDs
+// Returns list of Gaming Station's IDs
 func (manage *manager) GetGamingStationIDs() []string {
 	log.Log.Debug("Entering GetGamingStationIDs")
-	ids := make([]string, len(manage.gameStations))
-	i := 0
+	manage.mu.RLock()
+	defer manage.mu.RUnlock()
+	ids := make([]string, 0, len(manage.gameStations))
 	for id := range manage.gameStations {
-		ids[i] = id
-		i++
+		ids = append(ids, id)
 	}
 	log.Log.Debug("Exiting GetGamingStationIDs")
 	return ids
 }
 
-// Retturns required gaming station
+// Returns required gaming station
 func (manage *manager) GetGamingStation(id string) (gamestation.GamingStation, error) {
 	log.Log.Debug("Entering GetGamingStation")
+	manage.mu.RLock()
+	defer manage.mu.RUnlock()
 	station, ok := manage.gameStations[id]
 	if !ok {
 		err := fmt.Errorf("gaming station with specified ID %s does not exist", id)
@@ -87,6 +93,8 @@ func (manage *manager) GetGamingStation(id string) (gamestation.GamingStation, e
 // Add new Gaming station to the list
 func (manage *manager) AddGamingStation(gs gamestation.GamingStation) error {
 	log.Log.Debug("Entering AddGamingStation")
+	manage.mu.Lock()
+	defer manage.mu.Unlock()
 	_, ok := manage.gameStations[gs.GetID()]
 	if ok {
 		err := fmt.Errorf("gaming station with specified ID %s already exists", gs.GetID())
@@ -101,26 +109,30 @@ func (manage *manager) AddGamingStation(gs gamestation.GamingStation) error {
 // Returns number of available items
 func (manage *manager) GetNumberOfItems() int {
 	log.Log.Debug("Entering GetNumberOfItems")
+	manage.mu.RLock()
+	defer manage.mu.RUnlock()
 	log.Log.Debug("Exiting GetNumberOfItems")
 	return len(manage.items)
 }
 
-// Returns list og items's IDs
+// Returns list of items's IDs
 func (manage *manager) GetItemIDs() []string {
 	log.Log.Debug("Entering GetItemIDs")
-	ids := make([]string, len(manage.items))
-	i := 0
+	manage.mu.RLock()
+	defer manage.mu.RUnlock()
+	ids := make([]string, 0, len(manage.items))
 	for id := range manage.items {
-		ids[i] = id
-		i++
+		ids = append(ids, id)
 	}
 	log.Log.Debug("Exiting GetItemIDs")
 	return ids
 }
 
-// Retturns required item
+// Returns required item
 func (manage *manager) GetItem(id string) (warehouse.Item, error) {
-	log.Log.Debug("Entering GetGaminGetItemgStation")
+	log.Log.Debug("Entering GetItem")
+	manage.mu.RLock()
+	defer manage.mu.RUnlock()
 	item, ok := manage.items[id]
 	if !ok {
 		err := fmt.Errorf("item with specified ID %s does not exist", id)
@@ -135,6 +147,8 @@ func (manage *manager) GetItem(id string) (warehouse.Item, error) {
 // Add new item to the list
 func (manage *manager) AddItem(item warehouse.Item) error {
 	log.Log.Debug("Entering AddItem")
+	manage.mu.Lock()
+	defer manage.mu.Unlock()
 	_, ok := manage.items[item.ID]
 	if ok {
 		err := fmt.Errorf("gaming station with specified ID %s already exists", item.ID)
@@ -150,6 +164,8 @@ func (manage *manager) AddItem(item warehouse.Item) error {
 // Add items with quantity to the warehouse
 func (manage *manager) AddItems(item warehouse.Item, quantity int) {
 	log.Log.Debug("Entering AddItems", "itemID", item.ID, "quantity", quantity)
+	manage.mu.Lock()
+	defer manage.mu.Unlock()
 	_, ok := manage.items[item.ID]
 	if !ok {
 		// Item doesn't exist, create it
@@ -166,6 +182,8 @@ func (manage *manager) AddItems(item warehouse.Item, quantity int) {
 // Update item properties (Name, PublicPrice, IncomingPrice)
 func (manage *manager) UpdateItem(itemID string, name string, publicPrice int, incomingPrice int) error {
 	log.Log.Debug("Entering UpdateItem", "itemID", itemID)
+	manage.mu.Lock()
+	defer manage.mu.Unlock()
 	existingItem, ok := manage.items[itemID]
 	if !ok {
 		err := fmt.Errorf("item with specified ID %s does not exist", itemID)
@@ -187,6 +205,8 @@ func (manage *manager) UpdateItem(itemID string, name string, publicPrice int, i
 // Delete an item from the warehouse
 func (manage *manager) DeleteItem(itemID string) error {
 	log.Log.Debug("Entering DeleteItem", "itemID", itemID)
+	manage.mu.Lock()
+	defer manage.mu.Unlock()
 	_, ok := manage.items[itemID]
 	if !ok {
 		err := fmt.Errorf("item with specified ID %s does not exist", itemID)

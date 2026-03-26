@@ -30,7 +30,7 @@ func commonHeader(next http.Handler) http.Handler {
 
 // Start starts the http server
 func (server *Server) Start() error {
-	log.Log.Debug("Entering Server.commonHeader")
+	log.Log.Debug("Entering Server.Start")
 	var err error
 	server.billiardManager = billiardroom.Manager
 
@@ -70,6 +70,6 @@ func (server *Server) Start() error {
 	}
 	log.Log.Debug("Listen and Serve passed with", "result", err)
 
-	log.Log.Debug("Exiting Server.commonHeader")
+	log.Log.Debug("Exiting Server.Start")
 	return err
 }

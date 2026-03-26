@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const MinutesPerHour = 60
+
 type GamePayment struct {
 	id               string
 	configuration    config.PaymentConfiguration
@@ -90,7 +92,7 @@ func (gp *GamePayment) ClosePayment() error {
 
 	gp.check = Check{
 		Duration: int(duration.Minutes()),
-		Price:    int(duration.Minutes()) * gp.configuration.CostPerHour / 60,
+		Price:    int(duration.Minutes()) * gp.configuration.CostPerHour / MinutesPerHour,
 		ItemList: make([]warehouse.Item, len(gp.itemList)),
 	}
 	copy(gp.check.ItemList, gp.itemList)
@@ -191,5 +193,3 @@ func (gp *GamePayment) AddConsumption(item warehouse.Item) error {
 	log.Log.Debug("Exiting AddConsumption")
 	return nil
 }
-
-// Made with Bob
