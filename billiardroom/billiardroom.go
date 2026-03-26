@@ -18,8 +18,14 @@ type BilliardRoom interface {
 	GetNumberOfItems() int
 	// Returns list og items's IDs
 	GetItemIDs() []string
-	// Retturns required item
+	// Returns required item
 	GetItem(id string) (warehouse.Item, error)
 	// Add new item to the list
 	AddItem(item warehouse.Item) error
+	// Add items with quantity to the warehouse
+	AddItems(item warehouse.Item, quantity int)
+	// Update item properties (Name, PublicPrice, IncomingPrice)
+	UpdateItem(itemID string, name string, publicPrice int, incomingPrice int) error
+	// Delete an item from the warehouse
+	DeleteItem(itemID string) error
 }

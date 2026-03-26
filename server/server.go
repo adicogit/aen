@@ -46,6 +46,13 @@ func (server *Server) Start() error {
 	router.HandleFunc("/api/v1/gamestations/{gsID}", server.getGameStation).Methods("GET")
 	router.HandleFunc("/api/v1/gamestations/{gsID}/action", server.actionGameStation).Methods("POST")
 	router.HandleFunc("/api/v1/gamestations/{gsID}/status", server.getGameStationStatus).Methods("GET")
+	router.HandleFunc("/api/v1/gamestations/{gsID}/consumption", server.addGameStationConsumption).Methods("POST")
+
+	// API to handle warehouse items
+	router.HandleFunc("/api/v1/warehouseitems", server.getWarehouseItems).Methods("GET")
+	router.HandleFunc("/api/v1/warehouseitems", server.createWarehouseItems).Methods("POST")
+	router.HandleFunc("/api/v1/warehouseitems/{itemID}", server.modifyWarehouseItems).Methods("PUT")
+	router.HandleFunc("/api/v1/warehouseitems/{itemID}", server.deleteWarehouseItems).Methods("DELETE")
 
 	WebuiHandler.SetStaticPath(config.UIConfig.WebsiteDir)
 	router.PathPrefix("/").Handler(WebuiHandler)

@@ -28,4 +28,8 @@ type Warehouse interface {
 	GetItemIDs() []string
 	// Read an item from the warehouse without removing it
 	GetItem(itemID string) (Item, error)
+	// Update item properties (Name, PublicPrice, IncomingPrice). Returns error if item doesn't exist
+	UpdateItem(itemID string, name string, publicPrice int, incomingPrice int) error
+	// Delete an item from the warehouse. Returns error if item doesn't exist
+	DeleteItem(itemID string) error
 }

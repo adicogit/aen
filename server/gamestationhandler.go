@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"aen.it/poolmanager/log"
+	"aen.it/poolmanager/warehouse"
 	"github.com/gorilla/mux"
 )
 
@@ -38,6 +39,10 @@ type gamestationAction struct {
 type gamestationActionResult struct {
 	Action string `json:"action"`
 	Result string `json:"result"`
+}
+
+type gamestationConsumption struct {
+	ItemIDs []string `json:"itemIDs"`
 }
 
 // return the game station's ID list
@@ -143,5 +148,60 @@ func (server *Server) getGameStationStatus(w http.ResponseWriter, r *http.Reques
 		Cost:   check.Price,
 	}
 	log.Log.Debug("Exiting getGameStationStatus", "result", result)
+	json.NewEncoder(w).Encode(result)
+}
+
+// Add new consumption to the specified ganme station
+func (server *Server) addGameStationConsumption(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	vars := mux.Vars(r)
+	id := vars["gsID"]
+
+	var request gamestationConsumption
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		log.Log.Error("Unable to decode request body", "body", r.Body, "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Log.Debug("Entering addGameStationConsumption", "gsID", id, "request", request)
+
+	gs, err := server.billiardManager.GetGamingStation(id)
+	if err != nil {
+		log.Log.Error("Unable to get game station", "is", id, "error", err)
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Transaction: First validate all items exist before adding any
+	items := make([]warehouse.Item, 0, len(request.ItemIDs))
+	for _, itemID := range request.ItemIDs {
+		item, err := server.billiardManager.GetItem(itemID)
+		if err != nil {
+			log.Log.Error("Unable to get item from warehouse", "itemID", itemID, "error", err)
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		items = append(items, item)
+	}
+
+	// All items validated successfully, now add them all
+	for i, item := range items {
+		err = gs.AddConsumption(item)
+		if err != nil {
+			log.Log.Error("Error in adding consumption to game station", "gsID", id, "itemID", request.ItemIDs[i], "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	check := gs.GetTemporaryCheck()
+	result := gamestationStatus{
+		ID:     gs.GetID(),
+		Status: int(gs.GetStatus()),
+		Cost:   check.Price,
+	}
+
+	log.Log.Debug("Exiting addGameStationConsumption", "result", result)
 	json.NewEncoder(w).Encode(result)
 }

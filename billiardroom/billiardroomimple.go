@@ -14,6 +14,7 @@ type manager struct {
 	backgound    string
 	gameStations map[string]gamestation.GamingStation
 	items        map[string]warehouse.Item
+	itemQuantity map[string]int
 }
 
 var Manager *manager
@@ -35,6 +36,7 @@ func (manage *manager) loadFromConfig() {
 		manage.gameStations[station.ID] = &newGameStation
 	}
 	manage.items = make(map[string]warehouse.Item)
+	manage.itemQuantity = make(map[string]int)
 	for _, item := range config.BilliardRoomConfig.Items {
 		newItem := warehouse.Item{
 			ID:            item.ID,
@@ -43,6 +45,7 @@ func (manage *manager) loadFromConfig() {
 			IncomingPrice: item.IncomingPrice,
 		}
 		manage.items[item.ID] = newItem
+		manage.itemQuantity[item.ID] = 0
 	}
 	log.Log.Debug("Exiting loadFromConfig")
 }
@@ -139,6 +142,61 @@ func (manage *manager) AddItem(item warehouse.Item) error {
 		return err
 	}
 	manage.items[item.ID] = item
+	manage.itemQuantity[item.ID] = 0
 	log.Log.Debug("Exiting AddItem")
+	return nil
+}
+
+// Add items with quantity to the warehouse
+func (manage *manager) AddItems(item warehouse.Item, quantity int) {
+	log.Log.Debug("Entering AddItems", "itemID", item.ID, "quantity", quantity)
+	_, ok := manage.items[item.ID]
+	if !ok {
+		// Item doesn't exist, create it
+		manage.items[item.ID] = item
+		manage.itemQuantity[item.ID] = quantity
+	} else {
+		// Item exists, update quantity and potentially update item details
+		manage.items[item.ID] = item
+		manage.itemQuantity[item.ID] += quantity
+	}
+	log.Log.Debug("Exiting AddItems", "itemID", item.ID, "newQuantity", manage.itemQuantity[item.ID])
+}
+
+// Update item properties (Name, PublicPrice, IncomingPrice)
+func (manage *manager) UpdateItem(itemID string, name string, publicPrice int, incomingPrice int) error {
+	log.Log.Debug("Entering UpdateItem", "itemID", itemID)
+	existingItem, ok := manage.items[itemID]
+	if !ok {
+		err := fmt.Errorf("item with specified ID %s does not exist", itemID)
+		log.Log.Error(err.Error())
+		log.Log.Debug("Exiting UpdateItem")
+		return err
+	}
+
+	// Update only the modifiable properties
+	existingItem.Name = name
+	existingItem.PublicPrice = publicPrice
+	existingItem.IncomingPrice = incomingPrice
+
+	manage.items[itemID] = existingItem
+	log.Log.Debug("Exiting UpdateItem", "updated item", existingItem)
+	return nil
+}
+
+// Delete an item from the warehouse
+func (manage *manager) DeleteItem(itemID string) error {
+	log.Log.Debug("Entering DeleteItem", "itemID", itemID)
+	_, ok := manage.items[itemID]
+	if !ok {
+		err := fmt.Errorf("item with specified ID %s does not exist", itemID)
+		log.Log.Error(err.Error())
+		log.Log.Debug("Exiting DeleteItem")
+		return err
+	}
+
+	delete(manage.items, itemID)
+	delete(manage.itemQuantity, itemID)
+	log.Log.Debug("Exiting DeleteItem", "deleted itemID", itemID)
 	return nil
 }

@@ -97,3 +97,40 @@ func (lw *LocalWahouse) GetItem(itemID string) (Item, error) {
 	log.Log.Debug("Exiting GetItem")
 	return existingItem.Item, nil
 }
+
+// Update item properties (Name, PublicPrice, IncomingPrice). Returns error if item doesn't exist
+func (lw *LocalWahouse) UpdateItem(itemID string, name string, publicPrice int, incomingPrice int) error {
+	log.Log.Debug("Entering UpdateItem", "itemID", itemID)
+	existingItem, ok := lw.warehouse[itemID]
+	if !ok {
+		err := fmt.Errorf("there are no items with specified ID: %s", itemID)
+		log.Log.Error(err.Error())
+		log.Log.Debug("Exiting UpdateItem")
+		return err
+	}
+
+	// Update only the modifiable properties
+	existingItem.Item.Name = name
+	existingItem.Item.PublicPrice = publicPrice
+	existingItem.Item.IncomingPrice = incomingPrice
+
+	lw.warehouse[itemID] = existingItem
+	log.Log.Debug("Exiting UpdateItem", "updated item", existingItem)
+	return nil
+}
+
+// Delete an item from the warehouse. Returns error if item doesn't exist
+func (lw *LocalWahouse) DeleteItem(itemID string) error {
+	log.Log.Debug("Entering DeleteItem", "itemID", itemID)
+	_, ok := lw.warehouse[itemID]
+	if !ok {
+		err := fmt.Errorf("there are no items with specified ID: %s", itemID)
+		log.Log.Error(err.Error())
+		log.Log.Debug("Exiting DeleteItem")
+		return err
+	}
+
+	delete(lw.warehouse, itemID)
+	log.Log.Debug("Exiting DeleteItem", "deleted itemID", itemID)
+	return nil
+}
