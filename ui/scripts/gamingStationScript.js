@@ -8,6 +8,81 @@ const STATUS_CACHE_TTL_MS = 10 * 1000; // Cache status for 10 seconds
 // Status cache to avoid redundant API calls
 const statusCache = new Map();
 
+// Function to show custom confirmation modal
+function showConfirmModal(message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal');
+        const messageElement = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmOk');
+        const cancelBtn = document.getElementById('confirmCancel');
+        
+        // Set the message
+        messageElement.textContent = message;
+        
+        // Show the modal
+        modal.classList.add('show');
+        
+        // Handle confirm
+        const handleConfirm = () => {
+            modal.classList.remove('show');
+            cleanup();
+            resolve(true);
+        };
+        
+        // Handle cancel
+        const handleCancel = () => {
+            modal.classList.remove('show');
+            cleanup();
+            resolve(false);
+        };
+        
+        // Cleanup function to remove event listeners
+        const cleanup = () => {
+            confirmBtn.removeEventListener('click', handleConfirm);
+            cancelBtn.removeEventListener('click', handleCancel);
+            modal.removeEventListener('click', handleModalClick);
+        };
+        
+        // Close modal when clicking outside
+        const handleModalClick = (e) => {
+            if (e.target === modal) {
+                handleCancel();
+            }
+        };
+        
+        // Add event listeners
+        confirmBtn.addEventListener('click', handleConfirm);
+        cancelBtn.addEventListener('click', handleCancel);
+        modal.addEventListener('click', handleModalClick);
+    });
+}
+
+// Helper function to get translated text with fallback
+function getTranslation(key, fallback = '') {
+    try {
+        // Check if translations exist and are not a Promise
+        if (!window.translations || typeof window.translations.then === 'function') {
+            console.warn('Translations not loaded yet, using fallback');
+            return fallback || key;
+        }
+        
+        const userLang = navigator.language || navigator.userLanguage;
+        const langCode = userLang.split('-')[0];
+        const languageData = window.translations[langCode] || window.translations['en'];
+        
+        if (!languageData) {
+            console.warn('Language data not found, using fallback');
+            return fallback || key;
+        }
+        
+        const translation = languageData[key];
+        return translation || fallback || key;
+    } catch (error) {
+        console.error('Translation error:', error);
+        return fallback || key;
+    }
+}
+
 // Shared helper function to create status icons
 function createIcon(type, color, stationId, action = null, additionalClass = '') {
     const wrapper = document.createElement('div');
@@ -19,8 +94,16 @@ function createIcon(type, color, stationId, action = null, additionalClass = '')
     
     if (action) {
         wrapper.style.cursor = 'pointer';
-        wrapper.addEventListener('click', () => {
-            sendGameStationAction(stationId, action);
+        wrapper.addEventListener('click', async () => {
+            if (action === 'stop') {
+                const confirmMessage = getTranslation('confirm_stop_game', 'Sei sicuro di voler chiudere la partita?');
+                const confirmed = await showConfirmModal(confirmMessage);
+                if (confirmed) {
+                    sendGameStationAction(stationId, action);
+                }
+            } else {
+                sendGameStationAction(stationId, action);
+            }
         });
     }
 
@@ -144,17 +227,6 @@ async function getGameStationStatus(id, useCache = true) {
     }
 }
 
-// Function to get translated text
-async function getTranslation(key) {
-    if (!translations) {
-        translations = await loadTranslations();
-    }
-    const userLang = navigator.language || navigator.userLanguage;
-    const langCode = userLang.split('-')[0];
-    const languageData = translations[langCode] || translations['en'];
-    return languageData[key] || key;
-}
-
 // Function to send action to game station
 async function sendGameStationAction(stationId, action) {
     const API_URL = '/api/v1/gamestations/' + stationId + '/action';
@@ -169,7 +241,7 @@ async function sendGameStationAction(stationId, action) {
         });
 
         if (!response.ok) {
-            const errorMsg = await getTranslation('api_error') || 'API Error';
+            const errorMsg = getTranslation('api_error', 'API Error');
             alert(`${errorMsg}: ${response.status}`);
             return false;
         }
@@ -186,13 +258,13 @@ async function sendGameStationAction(stationId, action) {
             return true;
         } else {
             // Show error popup with translated message
-            const errorMsg = await getTranslation('action_failed') || 'Action failed';
+            const errorMsg = getTranslation('action_failed', 'Action failed');
             alert(`${errorMsg}: ${data.result || 'Unknown error'}`);
             return false;
         }
     } catch (error) {
         console.error(`ERROR sending action "${action}" to game station ${stationId}:`, error);
-        const errorMsg = await getTranslation('network_error') || 'Network error';
+        const errorMsg = getTranslation('network_error', 'Network error');
         alert(`${errorMsg}: ${error.message}`);
         return false;
     }
@@ -208,8 +280,8 @@ async function updateSingleBlockStatus(stationId) {
         return;
     }
 
-    // Fetch the status for this specific station
-    const statusData = await getGameStationStatus(stationId);
+    // Fetch the status for this specific station (bypass cache to get fresh data)
+    const statusData = await getGameStationStatus(stationId, false);
     
     if (statusData === null) {
         return;
@@ -250,8 +322,8 @@ async function updateSingleBlockStatus(stationId) {
 }
 
 // Helper function to translate consumption tooltip
-async function translateConsumptionTooltip(element) {
-    const tooltipText = await getTranslation('add_consumption');
+function translateConsumptionTooltip(element) {
+    const tooltipText = getTranslation('add_consumption', 'Add consumption');
     element.title = tooltipText;
 }
 

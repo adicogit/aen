@@ -17,7 +17,10 @@
     "api_error": "Errore API",
     "action_failed": "Azione fallita",
     "network_error": "Errore di rete",
-    "add_consumption": "Aggiungi consumazione"
+    "add_consumption": "Aggiungi consumazione",
+    "confirm_stop_game": "Sei sicuro di voler chiudere la partita?",
+    "confirm_title": "Conferma",
+    "confirm": "Conferma"
   },
   "en": {
     "welcome_title": "Billiard Manager",
@@ -37,6 +40,9 @@
     "api_error": "API Error",
     "action_failed": "Action failed",
     "network_error": "Network error",
-    "add_consumption": "Add consumption"
+    "add_consumption": "Add consumption",
+    "confirm_stop_game": "Are you sure you want to close the game?",
+    "confirm_title": "Confirm",
+    "confirm": "Confirm"
   }
 }

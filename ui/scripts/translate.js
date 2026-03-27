@@ -1,5 +1,6 @@
 
 let translations = null;
+window.translations = null; // Make translations globally accessible
 
 async function loadTranslations() {
   try {
@@ -24,6 +25,7 @@ async function loadTranslations() {
 async function translatePage() {
     if (!translations) {
         translations = await loadTranslations();
+        window.translations = translations; // Update global reference
     }
     
     const userLang = navigator.language || navigator.userLanguage;

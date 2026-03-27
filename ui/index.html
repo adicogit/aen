@@ -7,6 +7,7 @@
     <title data-translate="welcome_title">Billiard Manager</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/consumption.css">
+    <link rel="stylesheet" href="css/gamestation.css">
 </head>
 
 <body>
@@ -77,6 +78,22 @@
             <div class="modal-footer">
                 <button id="cancelConsumption" class="btn btn-cancel" data-translate="cancel">Annulla</button>
                 <button id="saveConsumption" class="btn btn-save" data-translate="save">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content confirm-modal-content">
+            <div class="modal-header">
+                <h2 data-translate="confirm_title">Conferma</h2>
+            </div>
+            <div class="modal-body confirm-modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmCancel" class="btn btn-cancel" data-translate="cancel">Annulla</button>
+                <button id="confirmOk" class="btn btn-save" data-translate="confirm">Conferma</button>
             </div>
         </div>
     </div>

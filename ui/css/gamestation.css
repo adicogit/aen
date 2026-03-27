@@ -1,0 +1,157 @@
+/* Game Station Styles */
+.block_station {
+    /* Le dimensioni verranno impostate da JavaScript */
+    background-color: #007bff;
+    background-image: url("../images/icons/billiard_logo_1.jpeg");
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: rgb(97, 78, 78);
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, width 0.3s, height 0.3s;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    flex-shrink: 0;
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 5px;
+    position: relative;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.station-name {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-align: center;
+    pointer-events: none;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.block_station_price,
+.block_station_status {
+    width: calc(100% - 10px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 5px;
+    margin: 2px 5px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.block_station_price {
+    flex-grow: 0;
+    height: calc(25% - 4px);
+    border-bottom: 1px solid #ccc;
+    background-color: rgba(240, 240, 240, 0.6);
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3vmin;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.block_station_status {
+    flex-grow: 0;
+    height: calc(75% - 4px);
+    background-color: rgba(224, 224, 224, 0.6);
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+}
+
+.consumption-icon {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    color: #007bff;
+}
+
+.consumption-icon:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.consumption-icon svg {
+    width: 70%;
+    height: 70%;
+}
+
+.status-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    padding: 0;
+    height: 80%;
+    aspect-ratio: 1 / 1;
+}
+
+.suspended-icons-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    gap: 5px;
+}
+
+.suspended-icons-container .status-icon.stop-icon {
+    height: 70%;
+    width: auto;
+}
+
+.suspended-icons-container .status-icon.restart-icon {
+    height: 30%;
+    width: auto;
+}
+
+/* Confirmation Modal Styles */
+.confirm-modal-content {
+    max-width: 400px;
+    height: auto;
+    max-height: 250px;
+}
+
+.confirm-modal-body {
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.confirm-modal-body p {
+    font-size: 18px;
+    color: #333;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Made with Bob */
