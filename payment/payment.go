@@ -17,6 +17,10 @@ const (
 
 // define information for the Check related to current payment
 type Check struct {
+	// ID for the current check
+	ID string
+	// GameStationName for the current check
+	GameStationName string
 	// Duration for the current check
 	Duration int
 	// Price for the current check

@@ -2,6 +2,7 @@ package billiardroom
 
 import (
 	"aen.it/poolmanager/gamestation"
+	"aen.it/poolmanager/payment"
 	"aen.it/poolmanager/warehouse"
 )
 
@@ -30,4 +31,12 @@ type BilliardRoom interface {
 	DeleteItem(itemID string) error
 	// Get quantity of a specific item
 	GetItemQuantity(itemID string) int
+	// Get list of open checks' IDs
+	GetOpenCheckIDs() []string
+	// Get required check
+	GetCheck(checkID string) (payment.Check, error)
+	// Add new check to the list
+	AddCheck(check payment.Check) error
+	// Pay check
+	PayCheck(checkID string) error
 }

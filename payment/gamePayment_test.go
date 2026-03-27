@@ -29,7 +29,7 @@ func createTestItem(id, name string, price int) warehouse.Item {
 // Test New function creates a GamePayment with correct initial state
 func TestNew(t *testing.T) {
 	config := createTestConfig()
-	gp := New(config)
+	gp := New(config, "Test Station")
 
 	if gp.id == "" {
 		t.Error("Expected non-empty ID")
@@ -54,7 +54,7 @@ func TestNew(t *testing.T) {
 
 // Test ConfigurePayment updates configuration
 func TestConfigurePayment(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	newConfig := config.PaymentConfiguration{
 		CostPerHour:     8000,
 		MinimumDuration: 30,
@@ -73,7 +73,7 @@ func TestConfigurePayment(t *testing.T) {
 
 // Test StartCountingPayment from Stopped status
 func TestStartCountingPayment_FromStopped(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 
 	err := gp.StartCountingPayment()
 	if err != nil {
@@ -91,7 +91,7 @@ func TestStartCountingPayment_FromStopped(t *testing.T) {
 
 // Test StartCountingPayment from Suspended status
 func TestStartCountingPayment_FromSuspended(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 	gp.PauseCountingPayment()
 
@@ -107,7 +107,7 @@ func TestStartCountingPayment_FromSuspended(t *testing.T) {
 
 // Test StartCountingPayment fails when already Started
 func TestStartCountingPayment_AlreadyStarted(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 
 	err := gp.StartCountingPayment()
@@ -122,7 +122,7 @@ func TestStartCountingPayment_AlreadyStarted(t *testing.T) {
 
 // Test PauseCountingPayment from Started status
 func TestPauseCountingPayment_FromStarted(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 	time.Sleep(100 * time.Millisecond)
 
@@ -142,7 +142,7 @@ func TestPauseCountingPayment_FromStarted(t *testing.T) {
 
 // Test PauseCountingPayment fails when not Started
 func TestPauseCountingPayment_NotStarted(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 
 	err := gp.PauseCountingPayment()
 	if err == nil {
@@ -156,7 +156,7 @@ func TestPauseCountingPayment_NotStarted(t *testing.T) {
 
 // Test ClosePayment from Started status
 func TestClosePayment_FromStarted(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 	time.Sleep(100 * time.Millisecond)
 
@@ -180,7 +180,7 @@ func TestClosePayment_FromStarted(t *testing.T) {
 
 // Test ClosePayment from Suspended status
 func TestClosePayment_FromSuspended(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 	time.Sleep(100 * time.Millisecond)
 	gp.PauseCountingPayment()
@@ -197,7 +197,7 @@ func TestClosePayment_FromSuspended(t *testing.T) {
 
 // Test ClosePayment fails when already Stopped
 func TestClosePayment_AlreadyStopped(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 
 	err := gp.ClosePayment()
 	if err == nil {
@@ -209,7 +209,7 @@ func TestClosePayment_AlreadyStopped(t *testing.T) {
 func TestClosePayment_MinimumDuration(t *testing.T) {
 	config := createTestConfig()
 	config.MinimumDuration = 15 // 15 minutes
-	gp := New(config)
+	gp := New(config, "Test Station")
 	gp.StartCountingPayment()
 	time.Sleep(100 * time.Millisecond) // Less than minimum
 
@@ -227,7 +227,7 @@ func TestClosePayment_MinimumDuration(t *testing.T) {
 
 // Test GetCheck returns check after closing
 func TestGetCheck_AfterClose(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 	time.Sleep(100 * time.Millisecond)
 	gp.ClosePayment()
@@ -248,7 +248,7 @@ func TestGetCheck_AfterClose(t *testing.T) {
 
 // Test GetCheck fails when payment not closed
 func TestGetCheck_NotClosed(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 
 	_, err := gp.GetCheck()
@@ -259,7 +259,7 @@ func TestGetCheck_NotClosed(t *testing.T) {
 
 // Test GetTemporaryCheck while Started
 func TestGetTemporaryCheck_WhileStarted(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 	time.Sleep(100 * time.Millisecond)
 
@@ -276,7 +276,7 @@ func TestGetTemporaryCheck_WhileStarted(t *testing.T) {
 
 // Test GetTemporaryCheck while Suspended
 func TestGetTemporaryCheck_WhileSuspended(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 	time.Sleep(100 * time.Millisecond)
 	gp.PauseCountingPayment()
@@ -290,7 +290,7 @@ func TestGetTemporaryCheck_WhileSuspended(t *testing.T) {
 
 // Test GetTemporaryCheck when Stopped returns final check
 func TestGetTemporaryCheck_WhenStopped(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 	time.Sleep(100 * time.Millisecond)
 	gp.ClosePayment()
@@ -309,7 +309,7 @@ func TestGetTemporaryCheck_WhenStopped(t *testing.T) {
 
 // Test GetPaymentStatus
 func TestGetPaymentStatus(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 
 	if gp.GetPaymentStatus() != Stopped {
 		t.Errorf("Expected initial status Stopped, got %v", gp.GetPaymentStatus())
@@ -333,7 +333,7 @@ func TestGetPaymentStatus(t *testing.T) {
 
 // Test AddConsumption while Started
 func TestAddConsumption_WhileStarted(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 
 	item := createTestItem("item1", "Test Item", 500)
@@ -354,7 +354,7 @@ func TestAddConsumption_WhileStarted(t *testing.T) {
 
 // Test AddConsumption while Suspended
 func TestAddConsumption_WhileSuspended(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 	gp.PauseCountingPayment()
 
@@ -372,7 +372,7 @@ func TestAddConsumption_WhileSuspended(t *testing.T) {
 
 // Test AddConsumption fails when Stopped
 func TestAddConsumption_WhenStopped(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 
 	item := createTestItem("item1", "Test Item", 500)
 	err := gp.AddConsumption(item)
@@ -388,7 +388,7 @@ func TestAddConsumption_WhenStopped(t *testing.T) {
 
 // Test AddConsumption multiple items
 func TestAddConsumption_MultipleItems(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 
 	item1 := createTestItem("item1", "Item 1", 500)
@@ -408,7 +408,7 @@ func TestAddConsumption_MultipleItems(t *testing.T) {
 func TestClosePayment_WithConsumptions(t *testing.T) {
 	config := createTestConfig()
 	config.MinimumDuration = 15
-	gp := New(config)
+	gp := New(config, "Test Station")
 	gp.StartCountingPayment()
 
 	item1 := createTestItem("item1", "Item 1", 500)
@@ -435,7 +435,7 @@ func TestClosePayment_WithConsumptions(t *testing.T) {
 
 // Test GetTemporaryCheck includes consumptions
 func TestGetTemporaryCheck_WithConsumptions(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 	gp.StartCountingPayment()
 
 	item := createTestItem("item1", "Item 1", 500)
@@ -455,7 +455,7 @@ func TestGetTemporaryCheck_WithConsumptions(t *testing.T) {
 
 // Test payment lifecycle: Start -> Pause -> Resume -> Close
 func TestPaymentLifecycle_Complete(t *testing.T) {
-	gp := New(createTestConfig())
+	gp := New(createTestConfig(), "Test Station")
 
 	// Start payment
 	err := gp.StartCountingPayment()

@@ -14,6 +14,7 @@ const MinutesPerHour = 60
 
 type GamePayment struct {
 	id               string
+	gameStationName  string
 	configuration    config.PaymentConfiguration
 	status           PaymentStatus
 	start            time.Time
@@ -22,12 +23,13 @@ type GamePayment struct {
 	itemList         []warehouse.Item
 }
 
-// New function initialize GamePayment passing a PaymentConfiguration
-func New(config config.PaymentConfiguration) GamePayment {
+// New function initialize GamePayment passing a PaymentConfiguration and game station name
+func New(config config.PaymentConfiguration, gameStationName string) GamePayment {
 	log.Log.Debug("Entering New for GamePayment")
 	log.Log.Debug("Exiting  New for GamePayment")
 	return GamePayment{
 		id:               uuid.New().String(),
+		gameStationName:  gameStationName,
 		configuration:    config,
 		status:           Stopped,
 		start:            time.Time{},
@@ -91,9 +93,11 @@ func (gp *GamePayment) ClosePayment() error {
 	}
 
 	gp.check = Check{
-		Duration: int(duration.Minutes()),
-		Price:    int(duration.Minutes()) * gp.configuration.CostPerHour / MinutesPerHour,
-		ItemList: make([]warehouse.Item, len(gp.itemList)),
+		ID:              gp.id,
+		GameStationName: gp.gameStationName,
+		Duration:        int(duration.Minutes()),
+		Price:           int(duration.Minutes()) * gp.configuration.CostPerHour / MinutesPerHour,
+		ItemList:        make([]warehouse.Item, len(gp.itemList)),
 	}
 	copy(gp.check.ItemList, gp.itemList)
 	for _, item := range gp.check.ItemList {
@@ -159,9 +163,11 @@ func (gp *GamePayment) GetTemporaryCheck() Check {
 	}
 
 	result := Check{
-		Duration: int(duration.Minutes()),
-		Price:    int(duration.Minutes()) * gp.configuration.CostPerHour / 60,
-		ItemList: make([]warehouse.Item, len(gp.itemList)),
+		ID:              gp.id,
+		GameStationName: gp.gameStationName,
+		Duration:        int(duration.Minutes()),
+		Price:           int(duration.Minutes()) * gp.configuration.CostPerHour / 60,
+		ItemList:        make([]warehouse.Item, len(gp.itemList)),
 	}
 	copy(result.ItemList, gp.itemList)
 	for _, item := range result.ItemList {

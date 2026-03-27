@@ -27,7 +27,7 @@ func New(config config.GameStationConfiguraiton) GameStation {
 	return GameStation{
 		name:     config.Name,
 		id:       config.ID,
-		payment:  payment.New(config.Payment),
+		payment:  payment.New(config.Payment, config.Name),
 		iconPath: config.IconPath,
 		devices:  make([]devices.Device, 0),
 	}

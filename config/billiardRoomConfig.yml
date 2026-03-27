@@ -4,13 +4,37 @@ items:
     id: "1"
     incomingPrice: 50
     publicPrice: 100
+  - name : "CocaCola"
+    id: "2"
+    incomingPrice: 100
+    publicPrice: 200
+  - name : "Birra"
+    id: "3"
+    incomingPrice: 150
+    publicPrice: 300
+  - name : "Panino"
+    id: "4"
+    incomingPrice: 250
+    publicPrice: 500
 
 defaultPayment: &defaultPayment
   minimumDuration: 0
   costPerHour: 1200
 
 gamingStations:
-  - name: "Postazione 1"
+  - name: "Tavolo da Biliardo 1"
     id: "1"
     payment: *defaultPayment
     iconPath: "images/icons/billiard_logo_1.jpeg"
+  - name: "Tavolo da Biliardo 2"
+    id: "2"
+    payment: *defaultPayment
+    iconPath: "images/icons/billiard_logo_3.jpeg"
+  - name: "Tavolo da Carte 1"
+    id: "3"
+    payment: *defaultPayment
+    iconPath: "images/icons/card_logo_1.jpeg"
+  - name: "Tavolo da Carte 2"
+    id: "4"
+    payment: *defaultPayment
+    iconPath: "images/icons/card_logo_2.jpeg"
