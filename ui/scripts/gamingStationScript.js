@@ -1,3 +1,62 @@
+// Constants
+const STATUS_UPDATE_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const MIN_BLOCK_SIZE = 100; // Minimum size in pixels for usability
+const CONTAINER_PADDING = 20; // Total padding for container
+const BLOCK_MARGIN = 10; // Margin between blocks
+const STATUS_CACHE_TTL_MS = 10 * 1000; // Cache status for 10 seconds
+
+// Status cache to avoid redundant API calls
+const statusCache = new Map();
+
+// Shared helper function to create status icons
+function createIcon(type, color, stationId, action = null, additionalClass = '') {
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('status-icon');
+    if (additionalClass) {
+        wrapper.classList.add(additionalClass);
+    }
+    wrapper.style.color = color;
+    
+    if (action) {
+        wrapper.style.cursor = 'pointer';
+        wrapper.addEventListener('click', () => {
+            sendGameStationAction(stationId, action);
+        });
+    }
+
+    let svgContent = '';
+    if (type === 'play') {
+        svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M8 5v14l11-7z"/></svg>`;
+    } else if (type === 'pause') {
+        svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    } else if (type === 'stop') {
+        svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 6h12v12H6z"/></svg>`;
+    } else if (type === 'restart') {
+        svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`;
+    }
+    wrapper.innerHTML = svgContent;
+    return wrapper;
+}
+
+// Shared function to render status icons based on status value
+function renderStatusIcons(status, stationId, container) {
+    if (status === 1) {
+        container.appendChild(createIcon('play', '#28a745', stationId, 'start'));
+    }
+
+    if (status === 0) {
+        container.appendChild(createIcon('pause', '#ffc107', stationId, 'suspend'));
+    }
+
+    if (status === 2) {
+        const suspendedContainer = document.createElement('div');
+        suspendedContainer.classList.add('suspended-icons-container');
+        suspendedContainer.appendChild(createIcon('stop', '#dc3545', stationId, 'stop', 'stop-icon'));
+        suspendedContainer.appendChild(createIcon('restart', '#17a2b8', stationId, 'start', 'restart-icon'));
+        container.appendChild(suspendedContainer);
+    }
+}
+
 async function getGameStationIDList() {
     // Specify URL to be used to load UI config
     const API_URL = '/api/v1/gamestations';
@@ -46,7 +105,15 @@ async function getGameStation(id) {
     return gameStation;
 }
 
-async function getGameStationStatus(id) {
+async function getGameStationStatus(id, useCache = true) {
+    // Check cache first if enabled
+    if (useCache) {
+        const cached = statusCache.get(id);
+        if (cached && (Date.now() - cached.timestamp) < STATUS_CACHE_TTL_MS) {
+            return cached.data;
+        }
+    }
+
     // Fetch only the status of a specific game station
     // API returns: { id: string, status: int, cost: int }
     const API_URL = '/api/v1/gamestations/' + id + '/status';
@@ -61,6 +128,12 @@ async function getGameStationStatus(id) {
 
         // parse received JSON
         const data = await response.json();
+        
+        // Cache the result
+        statusCache.set(id, {
+            data: data,
+            timestamp: Date.now()
+        });
         
         // Return the entire data object with status and cost
         return data;
@@ -149,7 +222,7 @@ async function updateSingleBlockStatus(stationId) {
     const block_price = block.querySelector('.block_station_price');
     if (block_price) {
         // If status is not initialized or Stopped (1), show zero cost, otherwise show actual cost
-        block_price.textContent = (status === undefined || status === null || status === 1) ? formatCost(0) : formatCost(cost);
+        block_price.textContent = (status === undefined || status === null || status === 1) ? formatPrice(0) : formatPrice(cost);
     }
     
     // Update status in block_station_status
@@ -171,52 +244,8 @@ async function updateSingleBlockStatus(stationId) {
             block_status.appendChild(consumptionIcon);
         }
         
-        // Helper to create icon
-        const createIcon = (type, color, action = null, additionalClass = '') => {
-            const wrapper = document.createElement('div');
-            wrapper.classList.add('status-icon');
-            if (additionalClass) {
-                wrapper.classList.add(additionalClass);
-            }
-            wrapper.style.color = color;
-            
-            if (action) {
-                wrapper.style.cursor = 'pointer';
-                wrapper.addEventListener('click', () => {
-                    sendGameStationAction(stationId, action);
-                });
-            }
-
-            let svgContent = '';
-            if (type === 'play') {
-                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M8 5v14l11-7z"/></svg>`;
-            } else if (type === 'pause') {
-                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-            } else if (type === 'stop') {
-                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 6h12v12H6z"/></svg>`;
-            } else if (type === 'restart') {
-                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`;
-            }
-            wrapper.innerHTML = svgContent;
-            return wrapper;
-        };
-
-        // Apply same status logic
-        if (status === 1) {
-            block_status.appendChild(createIcon('play', '#28a745', 'start'));
-        }
-
-        if (status === 0) {
-            block_status.appendChild(createIcon('pause', '#ffc107', 'suspend'));
-        }
-
-        if (status === 2) {
-            const suspendedContainer = document.createElement('div');
-            suspendedContainer.classList.add('suspended-icons-container');
-            suspendedContainer.appendChild(createIcon('stop', '#dc3545', 'stop', 'stop-icon'));
-            suspendedContainer.appendChild(createIcon('restart', '#17a2b8', 'start', 'restart-icon'));
-            block_status.appendChild(suspendedContainer);
-        }
+        // Apply status icons using shared function
+        renderStatusIcons(status, stationId, block_status);
     }
 }
 
@@ -226,11 +255,6 @@ async function translateConsumptionTooltip(element) {
     element.title = tooltipText;
 }
 
-// Helper function to format cost from cents to euros
-function formatCost(costInCents) {
-    const euros = (costInCents || 0) / 100;
-    return `€${euros.toFixed(2)}`;
-}
 
 async function generateGamingBlocks() {
     /* Number of blocks depends on number of gaming station using API*/
@@ -245,12 +269,12 @@ async function generateGamingBlocks() {
     const rows = Math.ceil(numBlocksInput / cols);
 
     // Calculate square size based on available space with padding
-    const availableWidth = window.innerWidth - 20; // 20px total padding
-    const availableHeight = window.innerHeight - 20;
+    const availableWidth = window.innerWidth - CONTAINER_PADDING;
+    const availableHeight = window.innerHeight - CONTAINER_PADDING;
 
-    let size = Math.floor(Math.min(availableWidth / cols, availableHeight / rows)) - 10;
+    let size = Math.floor(Math.min(availableWidth / cols, availableHeight / rows)) - BLOCK_MARGIN;
 
-    if (size < 100) size = 100; // Minimum size for usability
+    if (size < MIN_BLOCK_SIZE) size = MIN_BLOCK_SIZE; // Minimum size for usability
 
     // Fetch all game stations in parallel for better performance
     const gameStations = await Promise.all(gameStationIDList.map(id => getGameStation(id)));
@@ -279,7 +303,7 @@ async function generateGamingBlocks() {
         const block_price = document.createElement('div');
         block_price.classList.add('block_station_price');
         // If status is not initialized or Stopped (1), show zero cost, otherwise show actual cost
-        block_price.textContent = (status === undefined || status === null || status === 1) ? formatCost(0) : formatCost(gameStation.cost);
+        block_price.textContent = (status === undefined || status === null || status === 1) ? formatPrice(0) : formatPrice(gameStation.cost);
 
         const block_status = document.createElement('div');
         block_status.classList.add('block_station_status');
@@ -296,58 +320,14 @@ async function generateGamingBlocks() {
             e.stopPropagation(); // Prevent triggering other click events
             if (typeof openConsumptionModal === 'function') {
                 openConsumptionModal(gameStation.id);
+            } else {
+                console.error("openConsumptionModal not available");
             }
         });
         block_status.appendChild(consumptionIcon);
 
-        // Helper to create icon with optional action
-        const createIcon = (type, color, action = null, additionalClass = '') => {
-            const wrapper = document.createElement('div');
-            wrapper.classList.add('status-icon');
-            if (additionalClass) {
-                wrapper.classList.add(additionalClass);
-            }
-            wrapper.style.color = color;
-            
-            if (action) {
-                wrapper.style.cursor = 'pointer';
-                wrapper.addEventListener('click', () => {
-                    sendGameStationAction(gameStation.id, action);
-                });
-            }
-
-            let svgContent = '';
-            if (type === 'play') {
-                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M8 5v14l11-7z"/></svg>`;
-            } else if (type === 'pause') {
-                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-            } else if (type === 'stop') {
-                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 6h12v12H6z"/></svg>`;
-            } else if (type === 'restart') {
-                svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`;
-            }
-            wrapper.innerHTML = svgContent;
-            return wrapper;
-        };
-
-        // play in verde se lo stato di gameStation non è Stopped (1)
-        if (status === 1) {
-            block_status.appendChild(createIcon('play', '#28a745', 'start')); // Green with start action
-        }
-
-        // il simbolo di pausa in giallo se lo stato è Started (0)
-        if (status === 0) {
-            block_status.appendChild(createIcon('pause', '#ffc107', 'suspend')); // Yellow with suspend action
-        }
-
-        // simbolo di stop e restart verticalmente se lo stato è Suspended (2)
-        if (status === 2) {
-            const suspendedContainer = document.createElement('div');
-            suspendedContainer.classList.add('suspended-icons-container');
-            suspendedContainer.appendChild(createIcon('stop', '#dc3545', 'stop', 'stop-icon')); // Red with stop action - 60% height
-            suspendedContainer.appendChild(createIcon('restart', '#17a2b8', 'start', 'restart-icon')); // Cyan with start action - 40% height
-            block_status.appendChild(suspendedContainer);
-        }
+        // Apply status icons using shared function
+        renderStatusIcons(status, gameStation.id, block_status);
         const block_name = document.createElement('div');
         block_name.classList.add('station-name');
         block_name.textContent = gameStation.name;
@@ -371,37 +351,8 @@ async function updateBlockStationStatus() {
     const blocks = container.querySelectorAll('.block_station');
 
     // Fetch status and cost for all game stations in parallel using the status API
-    const statusData = await Promise.all(gameStationIDList.map(id => getGameStationStatus(id)));
-
-    // Helper to create icon (same as in generateGamingBlocks)
-    const createIcon = (type, color, stationId, action = null, additionalClass = '') => {
-        const wrapper = document.createElement('div');
-        wrapper.classList.add('status-icon');
-        if (additionalClass) {
-            wrapper.classList.add(additionalClass);
-        }
-        wrapper.style.color = color;
-        
-        if (action) {
-            wrapper.style.cursor = 'pointer';
-            wrapper.addEventListener('click', () => {
-                sendGameStationAction(stationId, action);
-            });
-        }
-
-        let svgContent = '';
-        if (type === 'play') {
-            svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M8 5v14l11-7z"/></svg>`;
-        } else if (type === 'pause') {
-            svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-        } else if (type === 'stop') {
-            svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M6 6h12v12H6z"/></svg>`;
-        } else if (type === 'restart') {
-            svgContent = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`;
-        }
-        wrapper.innerHTML = svgContent;
-        return wrapper;
-    };
+    // Bypass cache for periodic updates to ensure fresh data
+    const statusData = await Promise.all(gameStationIDList.map(id => getGameStationStatus(id, false)));
 
     // Update each block's status and cost
     blocks.forEach((block, index) => {
@@ -415,7 +366,7 @@ async function updateBlockStationStatus() {
             const block_price = block.querySelector('.block_station_price');
             if (block_price) {
                 // If status is not initialized or Stopped (1), show zero cost, otherwise show actual cost
-                block_price.textContent = (status === undefined || status === null || status === 1) ? formatCost(0) : formatCost(cost);
+                block_price.textContent = (status === undefined || status === null || status === 1) ? formatPrice(0) : formatPrice(cost);
             }
             
             // Update status in block_station_status
@@ -437,22 +388,8 @@ async function updateBlockStationStatus() {
                     block_status.appendChild(consumptionIcon);
                 }
 
-                // Apply same status logic as in generateGamingBlocks
-                if (status === 1) {
-                    block_status.appendChild(createIcon('play', '#28a745', stationId, 'start')); // Green with start action
-                }
-
-                if (status === 0) {
-                    block_status.appendChild(createIcon('pause', '#ffc107', stationId, 'suspend')); // Yellow with suspend action
-                }
-
-                if (status === 2) {
-                    const suspendedContainer = document.createElement('div');
-                    suspendedContainer.classList.add('suspended-icons-container');
-                    suspendedContainer.appendChild(createIcon('stop', '#dc3545', stationId, 'stop', 'stop-icon')); // Red with stop action - 60% height
-                    suspendedContainer.appendChild(createIcon('restart', '#17a2b8', stationId, 'start', 'restart-icon')); // Cyan with start action - 40% height
-                    block_status.appendChild(suspendedContainer);
-                }
+                // Apply status icons using shared function
+                renderStatusIcons(status, stationId, block_status);
             }
         }
     });
@@ -471,7 +408,7 @@ async function generateBlocks() {
     
     window.statusUpdateInterval = setInterval(() => {
         updateBlockStationStatus();
-    }, 300000); // 5 minutes = 300,000 milliseconds
+    }, STATUS_UPDATE_INTERVAL_MS);
     
     console.log('Automatic status updates enabled (every 5 minutes)');
 }

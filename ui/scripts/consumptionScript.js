@@ -33,11 +33,6 @@ async function fetchWarehouseItems() {
     }
 }
 
-// Function to format price from cents to euros
-function formatPrice(priceInCents) {
-    const euros = (priceInCents || 0) / 100;
-    return `€${euros.toFixed(2)}`;
-}
 
 // Function to render consumption list
 function renderConsumptionList(items, searchTerm = '') {

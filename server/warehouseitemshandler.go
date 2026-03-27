@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -10,12 +11,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const DefaultPageSize = 20
+
 type paginatedItemIDList struct {
 	ID         []string `json:"id"`
 	Page       int      `json:"page"`
 	PageSize   int      `json:"pageSize"`
 	TotalItems int      `json:"totalItems"`
 	TotalPages int      `json:"totalPages"`
+	HasItems   bool     `json:"hasItems"`
 }
 
 type createWarehouseItemRequest struct {
@@ -50,7 +54,7 @@ func (server *Server) getWarehouseItems(w http.ResponseWriter, r *http.Request) 
 
 	// Default values
 	page := 1
-	pageSize := 20
+	pageSize := DefaultPageSize
 
 	// Parse page parameter
 	if pageStr != "" {
@@ -111,6 +115,7 @@ func (server *Server) getWarehouseItems(w http.ResponseWriter, r *http.Request) 
 		PageSize:   pageSize,
 		TotalItems: totalItems,
 		TotalPages: totalPages,
+		HasItems:   totalItems > 0,
 	}
 
 	log.Log.Debug("Exiting getWarehouseItems", "page", page, "pageSize", pageSize, "totalItems", totalItems, "totalPages", totalPages)
@@ -170,7 +175,7 @@ func (server *Server) createWarehouseItems(w http.ResponseWriter, r *http.Reques
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Log.Error("Failed to decode request body", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(errorResponse{Error: "Invalid request body"})
+		json.NewEncoder(w).Encode(errorResponse{Error: fmt.Sprintf("Invalid request body: %v", err)})
 		return
 	}
 
@@ -245,7 +250,7 @@ func (server *Server) modifyWarehouseItems(w http.ResponseWriter, r *http.Reques
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Log.Error("Failed to decode request body", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(errorResponse{Error: "Invalid request body"})
+		json.NewEncoder(w).Encode(errorResponse{Error: fmt.Sprintf("Invalid request body: %v", err)})
 		return
 	}
 
