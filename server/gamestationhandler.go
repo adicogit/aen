@@ -42,7 +42,7 @@ type gamestationActionResult struct {
 }
 
 type gamestationConsumption struct {
-	ItemIDs []string `json:"itemIDs"`
+	Items []string `json:"items"`
 }
 
 // return the game station's ID list
@@ -174,8 +174,8 @@ func (server *Server) addGameStationConsumption(w http.ResponseWriter, r *http.R
 	}
 
 	// Transaction: First validate all items exist before adding any
-	items := make([]warehouse.Item, 0, len(request.ItemIDs))
-	for _, itemID := range request.ItemIDs {
+	items := make([]warehouse.Item, 0, len(request.Items))
+	for _, itemID := range request.Items {
 		item, err := server.billiardManager.GetItem(itemID)
 		if err != nil {
 			log.Log.Error("Unable to get item from warehouse", "itemID", itemID, "error", err)
@@ -189,7 +189,7 @@ func (server *Server) addGameStationConsumption(w http.ResponseWriter, r *http.R
 	for i, item := range items {
 		err = gs.AddConsumption(item)
 		if err != nil {
-			log.Log.Error("Error in adding consumption to game station", "gsID", id, "itemID", request.ItemIDs[i], "error", err)
+			log.Log.Error("Error in adding consumption to game station", "gsID", id, "itemID", request.Items[i], "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

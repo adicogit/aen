@@ -64,6 +64,32 @@ async function translateDynamicContent() {
     await translatePage();
 }
 
+// Helper function to get translated text with fallback (synchronous)
+function getTranslation(key, fallback = '') {
+    try {
+        // Check if translations exist and are not a Promise
+        if (!window.translations || typeof window.translations.then === 'function') {
+            console.warn('Translations not loaded yet, using fallback');
+            return fallback || key;
+        }
+        
+        const userLang = navigator.language || navigator.userLanguage;
+        const langCode = userLang.split('-')[0];
+        const languageData = window.translations[langCode] || window.translations['en'];
+        
+        if (!languageData) {
+            console.warn('Language data not found, using fallback');
+            return fallback || key;
+        }
+        
+        const translation = languageData[key];
+        return translation || fallback || key;
+    } catch (error) {
+        console.error('Translation error:', error);
+        return fallback || key;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     translatePage().catch(error => {
         console.error('Failed to translate page:', error);

@@ -20,7 +20,13 @@
     "add_consumption": "Aggiungi consumazione",
     "confirm_stop_game": "Sei sicuro di voler chiudere la partita?",
     "confirm_title": "Conferma",
-    "confirm": "Conferma"
+    "confirm": "Conferma",
+    "select_at_least_one": "Seleziona almeno una consumazione",
+    "error_saving_consumptions": "Errore nel salvare le consumazioni",
+    "no_consumption_found": "Nessuna consumazione trovata",
+    "no_item_selected": "Nessun articolo selezionato",
+    "error_title": "Errore",
+    "ok": "OK"
   },
   "en": {
     "welcome_title": "Billiard Manager",
@@ -43,6 +49,12 @@
     "add_consumption": "Add consumption",
     "confirm_stop_game": "Are you sure you want to close the game?",
     "confirm_title": "Confirm",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "select_at_least_one": "Select at least one consumption",
+    "error_saving_consumptions": "Error saving consumptions",
+    "no_consumption_found": "No consumption found",
+    "no_item_selected": "No item selected",
+    "error_title": "Error",
+    "ok": "OK"
   }
 }

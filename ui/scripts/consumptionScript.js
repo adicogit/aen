@@ -45,7 +45,8 @@ function renderConsumptionList(items, searchTerm = '') {
     );
     
     if (filteredItems.length === 0) {
-        consumptionList.innerHTML = '<div class="empty-message">Nessuna consumazione trovata</div>';
+        const message = getTranslation('no_consumption_found', 'Nessuna consumazione trovata');
+        consumptionList.innerHTML = `<div class="empty-message">${message}</div>`;
         return;
     }
     
@@ -82,13 +83,29 @@ function removeConsumption(index) {
     renderSelectedConsumptions();
 }
 
+// Function to update save button state
+function updateSaveButtonState() {
+    const saveBtn = document.getElementById('saveConsumption');
+    if (saveBtn) {
+        if (selectedConsumptions.length === 0) {
+            saveBtn.disabled = true;
+            saveBtn.classList.add('disabled');
+        } else {
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('disabled');
+        }
+    }
+}
+
 // Function to render selected consumptions
 function renderSelectedConsumptions() {
     const selectedContainer = document.getElementById('selectedConsumptions');
     selectedContainer.innerHTML = '';
     
     if (selectedConsumptions.length === 0) {
-        selectedContainer.innerHTML = '<div class="empty-message">Nessun articolo selezionato</div>';
+        const message = getTranslation('no_item_selected', 'Nessun articolo selezionato');
+        selectedContainer.innerHTML = `<div class="empty-message">${message}</div>`;
+        updateSaveButtonState();
         return;
     }
     
@@ -113,6 +130,8 @@ function renderSelectedConsumptions() {
         
         selectedContainer.appendChild(itemElement);
     });
+    
+    updateSaveButtonState();
 }
 
 // Function to open consumption modal
@@ -139,8 +158,8 @@ function closeConsumptionModal() {
 
 // Function to save consumptions
 async function saveConsumptions() {
+    // Button should be disabled if no items selected, but check anyway
     if (selectedConsumptions.length === 0) {
-        alert('Seleziona almeno una consumazione');
         return;
     }
     
@@ -157,10 +176,7 @@ async function saveConsumptions() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                items: selectedConsumptions.map(item => ({
-                    id: item.id,
-                    quantity: 1 // For now, always 1 item per click
-                }))
+                items: selectedConsumptions.map(item => item.id)
             })
         });
         
@@ -171,17 +187,21 @@ async function saveConsumptions() {
         const result = await response.json();
         console.log('Consumptions saved:', result);
         
-        // Close modal and update station status
+        // Save station ID before closing modal (which sets it to null)
+        const stationId = currentStationId;
+        
+        // Close modal
         closeConsumptionModal();
         
         // Update the station's display
         if (typeof updateSingleBlockStatus === 'function') {
-            await updateSingleBlockStatus(currentStationId);
+            await updateSingleBlockStatus(stationId);
         }
         
     } catch (error) {
         console.error('Error saving consumptions:', error);
-        alert('Errore nel salvare le consumazioni');
+        const message = getTranslation('error_saving_consumptions', 'Errore nel salvare le consumazioni');
+        await showErrorModal(message);
     }
 }
 

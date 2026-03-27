@@ -57,32 +57,6 @@ function showConfirmModal(message) {
     });
 }
 
-// Helper function to get translated text with fallback
-function getTranslation(key, fallback = '') {
-    try {
-        // Check if translations exist and are not a Promise
-        if (!window.translations || typeof window.translations.then === 'function') {
-            console.warn('Translations not loaded yet, using fallback');
-            return fallback || key;
-        }
-        
-        const userLang = navigator.language || navigator.userLanguage;
-        const langCode = userLang.split('-')[0];
-        const languageData = window.translations[langCode] || window.translations['en'];
-        
-        if (!languageData) {
-            console.warn('Language data not found, using fallback');
-            return fallback || key;
-        }
-        
-        const translation = languageData[key];
-        return translation || fallback || key;
-    } catch (error) {
-        console.error('Translation error:', error);
-        return fallback || key;
-    }
-}
-
 // Shared helper function to create status icons
 function createIcon(type, color, stationId, action = null, additionalClass = '') {
     const wrapper = document.createElement('div');
@@ -242,7 +216,7 @@ async function sendGameStationAction(stationId, action) {
 
         if (!response.ok) {
             const errorMsg = getTranslation('api_error', 'API Error');
-            alert(`${errorMsg}: ${response.status}`);
+            await showErrorModal(`${errorMsg}: ${response.status}`);
             return false;
         }
 
@@ -259,13 +233,13 @@ async function sendGameStationAction(stationId, action) {
         } else {
             // Show error popup with translated message
             const errorMsg = getTranslation('action_failed', 'Action failed');
-            alert(`${errorMsg}: ${data.result || 'Unknown error'}`);
+            await showErrorModal(`${errorMsg}: ${data.result || 'Unknown error'}`);
             return false;
         }
     } catch (error) {
         console.error(`ERROR sending action "${action}" to game station ${stationId}:`, error);
         const errorMsg = getTranslation('network_error', 'Network error');
-        alert(`${errorMsg}: ${error.message}`);
+        await showErrorModal(`${errorMsg}: ${error.message}`);
         return false;
     }
 }
