@@ -121,6 +121,7 @@ func (server *Server) getWarehouseItems(w http.ResponseWriter, r *http.Request) 
 	log.Log.Debug("Exiting getWarehouseItems", "page", page, "pageSize", pageSize, "totalItems", totalItems, "totalPages", totalPages)
 	json.NewEncoder(w).Encode(result)
 }
+
 func (server *Server) getWarehouseItem(w http.ResponseWriter, r *http.Request) {
 	log.Log.Debug("Entering getWarehouseItem")
 	w.Header().Set("Content-Type", "application/json")
