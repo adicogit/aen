@@ -116,6 +116,51 @@ func (server *Server) getWarehouseItems(w http.ResponseWriter, r *http.Request) 
 	log.Log.Debug("Exiting getWarehouseItems", "page", page, "pageSize", pageSize, "totalItems", totalItems, "totalPages", totalPages)
 	json.NewEncoder(w).Encode(result)
 }
+func (server *Server) getWarehouseItem(w http.ResponseWriter, r *http.Request) {
+	log.Log.Debug("Entering getWarehouseItem")
+	w.Header().Set("Content-Type", "application/json")
+
+	// Get item ID from URL path
+	vars := mux.Vars(r)
+	itemID := vars["itemID"]
+
+	if itemID == "" {
+		log.Log.Error("Item ID is required")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(errorResponse{Error: "Item ID is required"})
+		return
+	}
+
+	// Get the item from warehouse
+	item, err := server.billiardManager.GetItem(itemID)
+	if err != nil {
+		log.Log.Error("Failed to get item", "error", err)
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(errorResponse{Error: err.Error()})
+		return
+	}
+
+	// Get the quantity
+	quantity := server.billiardManager.GetItemQuantity(itemID)
+
+	// Create response with item details and quantity
+	response := struct {
+		ID            string `json:"id"`
+		Name          string `json:"name"`
+		PublicPrice   int    `json:"publicPrice"`
+		IncomingPrice int    `json:"incomingPrice"`
+		Quantity      int    `json:"quantity"`
+	}{
+		ID:            item.ID,
+		Name:          item.Name,
+		PublicPrice:   item.PublicPrice,
+		IncomingPrice: item.IncomingPrice,
+		Quantity:      quantity,
+	}
+
+	log.Log.Debug("Exiting getWarehouseItem", "itemID", itemID)
+	json.NewEncoder(w).Encode(response)
+}
 
 func (server *Server) createWarehouseItems(w http.ResponseWriter, r *http.Request) {
 	log.Log.Debug("Entering createWarehouseItems")

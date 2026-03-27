@@ -51,6 +51,7 @@ func (server *Server) Start() error {
 	// API to handle warehouse items
 	router.HandleFunc("/api/v1/warehouseitems", server.getWarehouseItems).Methods("GET")
 	router.HandleFunc("/api/v1/warehouseitems", server.createWarehouseItems).Methods("POST")
+	router.HandleFunc("/api/v1/warehouseitems/{itemID}", server.getWarehouseItem).Methods("GET")
 	router.HandleFunc("/api/v1/warehouseitems/{itemID}", server.modifyWarehouseItems).Methods("PUT")
 	router.HandleFunc("/api/v1/warehouseitems/{itemID}", server.deleteWarehouseItems).Methods("DELETE")
 

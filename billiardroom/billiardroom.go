@@ -28,4 +28,6 @@ type BilliardRoom interface {
 	UpdateItem(itemID string, name string, publicPrice int, incomingPrice int) error
 	// Delete an item from the warehouse
 	DeleteItem(itemID string) error
+	// Get quantity of a specific item
+	GetItemQuantity(itemID string) int
 }

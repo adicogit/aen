@@ -220,3 +220,17 @@ func (manage *manager) DeleteItem(itemID string) error {
 	log.Log.Debug("Exiting DeleteItem", "deleted itemID", itemID)
 	return nil
 }
+
+// Get quantity of a specific item
+func (manage *manager) GetItemQuantity(itemID string) int {
+	log.Log.Debug("Entering GetItemQuantity", "itemID", itemID)
+	manage.mu.RLock()
+	defer manage.mu.RUnlock()
+	quantity, ok := manage.itemQuantity[itemID]
+	if !ok {
+		log.Log.Debug("Exiting GetItemQuantity - item not found", "itemID", itemID)
+		return 0
+	}
+	log.Log.Debug("Exiting GetItemQuantity", "itemID", itemID, "quantity", quantity)
+	return quantity
+}

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate="welcome_title">Billiard Manager</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/consumption.css">
 </head>
 
 <body>
@@ -53,6 +54,34 @@
         <img src="images/icons/settings.png" alt="Config" id="configIconImg" data-translate-alt="config_icon_alt">
     </button>
 
+    <!-- Consumption Modal -->
+    <div id="consumptionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-translate="consumption_title">Consumazioni</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-main-panel">
+                    <input type="text" id="consumptionSearch" class="search-field" placeholder="Cerca consumazione..." data-translate-placeholder="search_consumption">
+                    <div id="consumptionList" class="consumption-list">
+                        <!-- Consumption items will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-side-panel">
+                    <h3 data-translate="selected_items">Articoli Selezionati</h3>
+                    <div id="selectedConsumptions" class="selected-consumptions">
+                        <!-- Selected items will appear here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelConsumption" class="btn btn-cancel" data-translate="cancel">Annulla</button>
+                <button id="saveConsumption" class="btn btn-save" data-translate="save">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/consumptionScript.js"></script>
     <script src="scripts/gamingStationScript.js"></script>
     <script src="scripts/script.js"></script>
     <script src="scripts/translate.js"></script>

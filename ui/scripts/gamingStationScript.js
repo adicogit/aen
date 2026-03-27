@@ -161,6 +161,13 @@ async function updateSingleBlockStatus(stationId) {
         
         // Re-add consumption icon if it existed
         if (consumptionIcon) {
+            // Re-attach the click event listener
+            consumptionIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof openConsumptionModal === 'function') {
+                    openConsumptionModal(stationId);
+                }
+            });
             block_status.appendChild(consumptionIcon);
         }
         
@@ -285,6 +292,12 @@ async function generateGamingBlocks() {
         </svg>`;
         consumptionIcon.title = 'add_consumption'; // Will be translated
         consumptionIcon.dataset.translate = 'add_consumption';
+        consumptionIcon.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent triggering other click events
+            if (typeof openConsumptionModal === 'function') {
+                openConsumptionModal(gameStation.id);
+            }
+        });
         block_status.appendChild(consumptionIcon);
 
         // Helper to create icon with optional action
@@ -414,6 +427,13 @@ async function updateBlockStationStatus() {
                 
                 // Re-add consumption icon if it existed
                 if (consumptionIcon) {
+                    // Re-attach the click event listener
+                    consumptionIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (typeof openConsumptionModal === 'function') {
+                            openConsumptionModal(stationId);
+                        }
+                    });
                     block_status.appendChild(consumptionIcon);
                 }
 
