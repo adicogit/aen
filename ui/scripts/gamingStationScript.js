@@ -306,11 +306,26 @@ async function updateSingleBlockStatus(stationId) {
         
         // Re-add consumption icon if it existed
         if (consumptionIcon) {
+            // Update disabled state based on new status
+            if (status === 1) {
+                consumptionIcon.classList.add('disabled');
+            } else {
+                consumptionIcon.classList.remove('disabled');
+            }
+            
             // Re-attach the click event listener
             consumptionIcon.addEventListener('click', (e) => {
                 e.stopPropagation();
+                
+                // Don't allow click if disabled
+                if (consumptionIcon.classList.contains('disabled')) {
+                    return;
+                }
+                
                 if (typeof openConsumptionModal === 'function') {
                     openConsumptionModal(stationId);
+                } else {
+                    console.error("openConsumptionModal not available");
                 }
             });
             block_status.appendChild(consumptionIcon);
@@ -388,8 +403,20 @@ async function generateGamingBlocks() {
         </svg>`;
         consumptionIcon.title = 'add_consumption'; // Will be translated
         consumptionIcon.dataset.translate = 'add_consumption';
+        
+        // Enable/disable based on status (enabled only when game is active: status 0 or 2)
+        if (status === 1) {
+            consumptionIcon.classList.add('disabled');
+        }
+        
         consumptionIcon.addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent triggering other click events
+            
+            // Don't allow click if disabled
+            if (consumptionIcon.classList.contains('disabled')) {
+                return;
+            }
+            
             if (typeof openConsumptionModal === 'function') {
                 openConsumptionModal(gameStation.id);
             } else {
