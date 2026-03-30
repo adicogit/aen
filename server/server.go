@@ -49,10 +49,10 @@ func (server *Server) Start() error {
 	router.HandleFunc("/api/v1/gamestations/{gsID}/consumption", server.addGameStationConsumption).Methods("POST")
 
 	// API to handle checks
-	router.HandleFunc("/api/v1/checks", server.getChecks.Methods("GET")
-	router.HandleFunc("/api/v1/checks", server.addCheck.Methods("POST")
-	router.HandleFunc("/api/v1/checks/{checkID}", server.getCheck.Methods("GET")
-	router.HandleFunc("/api/v1/checks/{checkID}", server.payCheck.Methods("PUT")
+	router.HandleFunc("/api/v1/checks", server.getChecks).Methods("GET")
+	router.HandleFunc("/api/v1/checks", server.addCheck).Methods("POST")
+	router.HandleFunc("/api/v1/checks/{checkID}", server.getCheck).Methods("GET")
+	router.HandleFunc("/api/v1/checks/{checkID}", server.payCheck).Methods("PUT")
 
 	// API to handle warehouse items
 	router.HandleFunc("/api/v1/warehouseitems", server.getWarehouseItems).Methods("GET")

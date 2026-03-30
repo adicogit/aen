@@ -29,7 +29,7 @@ func (server *Server) addCheck(w http.ResponseWriter, r *http.Request) {
 	log.Log.Debug("Entering addCheck")
 	w.Header().Set("Content-Type", "application/json")
 	var check payment.Check
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&check); err != nil {
 		log.Log.Error("Failed to decode request body", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(errorResponse{Error: fmt.Sprintf("Invalid request body: %v", err)})
