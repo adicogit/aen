@@ -17,7 +17,13 @@ type checkIDList struct {
 func (server *Server) getChecks(w http.ResponseWriter, r *http.Request) {
 	log.Log.Debug("Entering getChecks")
 	w.Header().Set("Content-Type", "application/json")
-	list := server.billiardManager.GetOpenCheckIDs()
+	list, err := server.accountingManager.GetOpenCheckIDs()
+	if err != nil {
+		log.Log.Error("Failed to get open checks", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(errorResponse{Error: err.Error()})
+		return
+	}
 	result := checkIDList{
 		ID: list,
 	}
@@ -36,7 +42,7 @@ func (server *Server) addCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := server.billiardManager.AddCheck(check); err != nil {
+	if err := server.accountingManager.AddCheck(check); err != nil {
 		log.Log.Error("Failed to add check", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(errorResponse{Error: fmt.Sprintf("Failed to add check: %v", err)})
@@ -59,7 +65,7 @@ func (server *Server) getCheck(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(errorResponse{Error: "Check ID is required"})
 		return
 	}
-	check, err := server.billiardManager.GetCheck(checkID)
+	check, err := server.accountingManager.GetCheck(checkID)
 	if err != nil {
 		log.Log.Error("Failed to get check", "error", err)
 		w.WriteHeader(http.StatusNotFound)
@@ -81,7 +87,7 @@ func (server *Server) payCheck(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(errorResponse{Error: "Check ID is required"})
 		return
 	}
-	if err := server.billiardManager.PayCheck(checkID); err != nil {
+	if err := server.accountingManager.PayCheck(checkID); err != nil {
 		log.Log.Error("Failed to pay check", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(errorResponse{Error: fmt.Sprintf("Failed to pay check: %v", err)})

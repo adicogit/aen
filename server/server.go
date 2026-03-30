@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"aen.it/poolmanager/accounting"
 	"aen.it/poolmanager/billiardroom"
 	"aen.it/poolmanager/config"
 	"aen.it/poolmanager/log"
@@ -14,8 +15,9 @@ import (
 
 // Server is the implementaiton of the http server
 type Server struct {
-	billiardManager billiardroom.BilliardRoom
-	mu              sync.Mutex
+	billiardManager   billiardroom.BilliardRoom
+	accountingManager accounting.Accounting
+	mu                sync.Mutex
 }
 
 func commonHeader(next http.Handler) http.Handler {
@@ -33,6 +35,7 @@ func (server *Server) Start() error {
 	log.Log.Debug("Entering Server.Start")
 	var err error
 	server.billiardManager = billiardroom.Manager
+	server.accountingManager = accounting.AccountingSystem
 
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -76,7 +79,13 @@ func (server *Server) Start() error {
 		err = http.ListenAndServeTLS(portNumber, config.UIConfig.CertFile, config.UIConfig.KeyFile, router)
 	}
 	log.Log.Debug("Listen and Serve passed with", "result", err)
-
+	server.Shutdown()
 	log.Log.Debug("Exiting Server.Start")
 	return err
+}
+
+func (server *Server) Shutdown() {
+	log.Log.Info("Entering Server.Shutdown")
+	server.accountingManager.Close()
+	log.Log.Info("Exiting Server.Shutdown")
 }

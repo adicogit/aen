@@ -7,7 +7,6 @@ import (
 	"aen.it/poolmanager/config"
 	"aen.it/poolmanager/gamestation"
 	"aen.it/poolmanager/log"
-	"aen.it/poolmanager/payment"
 	"aen.it/poolmanager/warehouse"
 )
 
@@ -18,7 +17,6 @@ type manager struct {
 	gameStations map[string]gamestation.GamingStation
 	items        map[string]warehouse.Item
 	itemQuantity map[string]int
-	openChecks   map[string]payment.Check
 }
 
 var Manager *manager
@@ -41,7 +39,6 @@ func (manage *manager) loadFromConfig() {
 	}
 	manage.items = make(map[string]warehouse.Item)
 	manage.itemQuantity = make(map[string]int)
-	manage.openChecks = make(map[string]payment.Check)
 	for _, item := range config.BilliardRoomConfig.Items {
 		newItem := warehouse.Item{
 			ID:            item.ID,
@@ -236,67 +233,4 @@ func (manage *manager) GetItemQuantity(itemID string) int {
 	}
 	log.Log.Debug("Exiting GetItemQuantity", "itemID", itemID, "quantity", quantity)
 	return quantity
-}
-
-// Get list of open checks' IDs
-func (manage *manager) GetOpenCheckIDs() []string {
-	log.Log.Debug("Entering GetOpenCheckIDs")
-	manage.mu.RLock()
-	defer manage.mu.RUnlock()
-	ids := make([]string, 0, len(manage.openChecks))
-	for id := range manage.openChecks {
-		ids = append(ids, id)
-	}
-	log.Log.Debug("Exiting GetOpenCheckIDs")
-	return ids
-}
-
-// Add new check to the list
-func (manage *manager) AddCheck(check payment.Check) error {
-	log.Log.Debug("Entering AddCheck", "checkID", check.ID)
-	manage.mu.Lock()
-	defer manage.mu.Unlock()
-	_, ok := manage.openChecks[check.ID]
-	if ok {
-		err := fmt.Errorf("check with specified ID %s already exists", check.ID)
-		log.Log.Error(err.Error())
-		log.Log.Debug("Exiting AddCheck")
-		return err
-	}
-	manage.openChecks[check.ID] = check
-	log.Log.Debug("Exiting AddCheck", "added checkID", check.ID)
-	return nil
-}
-
-// Get required check
-func (manage *manager) GetCheck(checkID string) (payment.Check, error) {
-	log.Log.Debug("Entering GetCheck", "checkID", checkID)
-	manage.mu.RLock()
-	defer manage.mu.RUnlock()
-	check, ok := manage.openChecks[checkID]
-	if !ok {
-		err := fmt.Errorf("check with specified ID %s does not exist", checkID)
-		log.Log.Error(err.Error())
-		log.Log.Debug("Exiting GetCheck")
-		return payment.Check{}, err
-	}
-	log.Log.Debug("Exiting GetCheck", "found checkID", checkID)
-	return check, nil
-}
-
-// Pay check
-func (manage *manager) PayCheck(checkID string) error {
-	log.Log.Debug("Entering PayCheck", "checkID", checkID)
-	manage.mu.Lock()
-	defer manage.mu.Unlock()
-	_, ok := manage.openChecks[checkID]
-	if !ok {
-		err := fmt.Errorf("check with specified ID %s does not exist", checkID)
-		log.Log.Error(err.Error())
-		log.Log.Debug("Exiting PayCheck")
-		return err
-	}
-	delete(manage.openChecks, checkID)
-	log.Log.Debug("Exiting PayCheck", "paid checkID", checkID)
-	return nil
 }

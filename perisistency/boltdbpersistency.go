@@ -44,7 +44,10 @@ func (db *boltDBPersistency) OpenDB() error {
 
 func (db *boltDBPersistency) CloseDB() {
 	log.Log.Debug("Entering CloseDB")
-	db.bolt.Close()
+	if db.bolt != nil {
+		db.bolt.Close()
+		db.bolt = nil
+	}
 	log.Log.Debug("Exiting 	CloseDB")
 }
 

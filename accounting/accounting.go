@@ -19,4 +19,6 @@ type Accounting interface {
 	AddCheck(check payment.Check) error
 	// Pay check for currently set accounting day. Returns an eror no accounting day has been set.
 	PayCheck(checkID string) error
+	// Close accounting system
+	Close()
 }
