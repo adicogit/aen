@@ -8,7 +8,7 @@ type Accounting interface {
 	// Get accounting day. Returns a string representing the current accounting day or empty string if it is not set
 	GetCurrentAccountingDay() string
 	// Get list of already available accounting days
-	GetAccountingDays() []string
+	GetAccountingDays() ([]string, error)
 	// Close current accounting day
 	CloseCurrentAccountingDay() error
 	// Get list of open checks' IDs for currently set accounting day. Returns an eror no accounting day has been set.
