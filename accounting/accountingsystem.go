@@ -1,9 +1,8 @@
 package accounting
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
+	"maps"
 	"slices"
 	"sync"
 	"time"
@@ -14,13 +13,25 @@ import (
 )
 
 const (
-	ACCOUNTING_DAYS_KEY = "Accounting_Days"
+	ACCOUNTING_DAYS_KEY  = "Accounting_Days"
+	OPENED_CHECKS_KEY    = "Opened_Checks"
+	CLOSED_CHECKS_KEY    = "Closed_Checks"
+	CURRENT_INCOMING_KEY = "Current_Incoming"
+	CURRENT_EXPECTED_KEY = "Current_Expected"
 )
+
+type closedCheck struct {
+	Check payment.Check
+	Payed int
+}
 
 type accountingSystem struct {
 	mu                   sync.RWMutex
 	openChecks           map[string]payment.Check
+	closedChecks         map[string]closedCheck
 	currentAccountingDay string
+	currentIncoming      int
+	currentExpected      int
 }
 
 var AccountingSystem *accountingSystem
@@ -32,56 +43,57 @@ func init() {
 	log.Log.Debug("Exiting AccountingSystem init")
 }
 
+// Set the current accounting day. If it already exists it mus be read from persisted data, ortherwise its status must be initialized
 func (accounting *accountingSystem) SetAccountingDay(date string) error {
 	log.Log.Debug("Entering SetAccountingDay", "date", date)
 	// Check if date is a valid date in the format aaaammdd
 	_, err := time.Parse("19701608", date)
 	if err != nil {
-		error := fmt.Errorf("Invalid date used in SetAccountingDay. Error: %s", err)
+		error := fmt.Errorf("Invalid date used in SetAccountingDay. Reason: %s", err)
 		log.Log.Error("Trying to use invalid date as accounting date", "date", date, "error", error)
 		log.Log.Debug("Exiting SetAccountingDay")
 		return error
 	}
 
+	currentAccountingDay := accounting.currentAccountingDay
 	// Add date as available accounting date
 	var days []string
-	data, err := persistency.BoltDBPersistency.ReadData(ACCOUNTING_DAYS_KEY)
+	err = persistency.BoltDBPersistency.ReadData(ACCOUNTING_DAYS_KEY, days)
 	if err != nil {
-		error := fmt.Errorf("Unable to read data from DB. Error: %s", err)
+		error := fmt.Errorf("Unable to read data from DB. Reason: %s", err)
 		log.Log.Error("Error in trying to read data from DB", "key", ACCOUNTING_DAYS_KEY, "error", error)
 		log.Log.Debug("Exiting SetAccountingDay")
 		return error
 	}
 
-	err = convertFromByteArray(data, days)
-	if err != nil {
-		error := fmt.Errorf("Unable to convert data read from DB. Error: %s", err)
-		log.Log.Error("Error in trying to convert data read from DB", "data", data, "error", error)
-		log.Log.Debug("Exiting SetAccountingDay")
-		return error
-	}
+	// Set date as current accounting day
+	accounting.currentAccountingDay = date
 
 	if !slices.Contains(days, date) {
 		days = append(days, date)
-		data, err = convertToByteArray(date)
+		err = persistency.BoltDBPersistency.WriteData(ACCOUNTING_DAYS_KEY, days)
 		if err != nil {
-			error := fmt.Errorf("Unable to convert date to byte array. Error: %s", err)
-			log.Log.Error("Error in trying to convert data to write to DB", "data", date, "error", error)
+			// Restore current accounting day to saved value
+			accounting.currentAccountingDay = currentAccountingDay
+			error := fmt.Errorf("Unable to persist updated list of accounting days. Reason: %s", err)
+			log.Log.Error("Error in trying to persist updated list of accounting days", "key", ACCOUNTING_DAYS_KEY, "data", days, "error", error)
 			log.Log.Debug("Exiting SetAccountingDay")
 			return error
 		}
-
-		err = persistency.BoltDBPersistency.WriteData(ACCOUNTING_DAYS_KEY, data)
+		accounting.closedChecks = make(map[string]closedCheck)
+		accounting.openChecks = make(map[string]payment.Check)
+		accounting.currentExpected = 0
+		accounting.currentIncoming = 0
+	} else {
+		err = accounting.restore()
 		if err != nil {
-			error := fmt.Errorf("Unable to write data to DB. Error: %s", err)
-			log.Log.Error("Error in trying to write to DB", "data", data, "error", error)
+			accounting.currentAccountingDay = currentAccountingDay
+			error := fmt.Errorf("Unable to read accounting day %s. Reason: %s", accounting.currentAccountingDay, err)
+			log.Log.Error("Error in trying to read current accounting day", "accountingDay", date, "error", error)
 			log.Log.Debug("Exiting SetAccountingDay")
 			return error
 		}
 	}
-
-	// Set date as current accounting day
-	accounting.currentAccountingDay = date
 
 	log.Log.Debug("Exiting SetAccountingDay")
 	return nil
@@ -98,19 +110,11 @@ func (accounting *accountingSystem) GetAccountingDays() ([]string, error) {
 	var result []string
 
 	// Read data from DB
-	data, err := persistency.BoltDBPersistency.ReadData(ACCOUNTING_DAYS_KEY)
+	err := persistency.BoltDBPersistency.ReadData(ACCOUNTING_DAYS_KEY, result)
 	if err != nil {
-		error := fmt.Errorf("Unable to read data from DB. Error: %s", err)
+		error := fmt.Errorf("Unable to read data from DB. Reason: %s", err)
 		log.Log.Error("Error in trying to read data from DB", "key", ACCOUNTING_DAYS_KEY, "error", error)
-		log.Log.Debug("Exiting SetAccountingDay")
-		return result, error
-	}
-
-	err = convertFromByteArray(data, result)
-	if err != nil {
-		error := fmt.Errorf("Unable to convert data read from DB. Error: %s", err)
-		log.Log.Error("Error in trying to convert data read from DB", "data", data, "error", error)
-		log.Log.Debug("Exiting SetAccountingDay")
+		log.Log.Debug("Exiting GetAccountingDays")
 		return result, error
 	}
 
@@ -118,24 +122,165 @@ func (accounting *accountingSystem) GetAccountingDays() ([]string, error) {
 	return result, nil
 }
 
-func convertToByteArray(data interface{}) ([]byte, error) {
-	var buffer bytes.Buffer
+func (accounting *accountingSystem) CloseCurrentAccountingDay() error {
+	log.Log.Debug("Entering CloseCurrentAccountingDay")
 
-	enc := gob.NewEncoder(&buffer)
-	err := enc.Encode(&data)
-	if err != nil {
-		log.Log.Error("Unable to convert data into byte array", "data", data, "error", err)
-	}
-	return buffer.Bytes(), err
+	log.Log.Debug("Exiting CloseCurrentAccountingDay")
+	return nil
 }
 
-func convertFromByteArray(dataToRead []byte, data interface{}) error {
-	buffer := bytes.NewBuffer(dataToRead)
+func (accounting *accountingSystem) GetOpenCheckIDs() ([]string, error) {
+	log.Log.Debug("Entering GetOpenCheckIDs")
 
-	dec := gob.NewDecoder(buffer)
-	err := dec.Decode(&data)
-	if err != nil {
-		log.Log.Error("Unable to convert data into object", "data", dataToRead, "error", err)
+	// Check if currentAccountingDay has been set
+	if len(accounting.currentAccountingDay) == 0 {
+		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
+		log.Log.Error("Error in getting list of opened check IDs", "error", error)
+		log.Log.Debug("Exiting GetOpenCheckIDs")
+		return []string{}, error
 	}
-	return err
+
+	result := slices.Collect(maps.Keys(accounting.openChecks))
+	log.Log.Debug("Exiting GetOpenCheckIDs", "result", result)
+	return result, nil
+}
+
+func (accounting *accountingSystem) GetCheck(checkID string) (payment.Check, error) {
+	log.Log.Debug("Entering GetCheck", "checkID", checkID)
+
+	// Check if currentAccountingDay has been set
+	if len(accounting.currentAccountingDay) == 0 {
+		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
+		log.Log.Error("Error in getting specified check", "checkID", checkID, "error", error)
+		log.Log.Debug("Exiting GetOpenCheckIDs")
+		return payment.Check{}, error
+	}
+
+	result, contained := accounting.openChecks[checkID]
+	if !contained {
+		closedCheck, contained := accounting.closedChecks[checkID]
+		if !contained {
+			error := fmt.Errorf("Unable to find out requested data. Check ID: %s", checkID)
+			log.Log.Error("Error in looking for check IDs", "checkID", checkID, "error", error)
+			log.Log.Debug("Exiting GetOpenCheckIDs")
+			return payment.Check{}, error
+		}
+		result = closedCheck.Check
+	}
+
+	log.Log.Debug("Exiting GetOpenCheckIDs", "result", result)
+	return result, nil
+}
+
+func (accounting *accountingSystem) AddCheck(check payment.Check) error {
+	log.Log.Debug("Entering AddCheck", "check", check)
+
+	// Check if currentAccountingDay has been set
+	if len(accounting.currentAccountingDay) == 0 {
+		error := fmt.Errorf("Current Accounting Day must be set before setting any information about it")
+		log.Log.Error("Error in adding new check", "check", check, "error", error)
+		log.Log.Debug("Exiting AddCheck")
+		return error
+	}
+
+	// Add received check to list of opened checks
+	accounting.openChecks[check.ID] = check
+
+	// persist the new status
+	err := accounting.persist()
+	if err != nil {
+		// Error in serializing the new check. Must remove it from the list of open check aborting the operation
+		delete(accounting.openChecks, check.ID)
+		error := fmt.Errorf("Unable to add new check with ID %s. Reason: %s", check.ID, err)
+		log.Log.Error("Error in adding new check", "check", check, "error", error)
+		log.Log.Debug("Exiting AddCheck")
+		return error
+	}
+
+	log.Log.Debug("Exiting AddCheck")
+	return nil
+}
+
+func (accounting *accountingSystem) PayCheck(checkID string, payment int) error {
+	log.Log.Debug("Entering PayCheck", "checkID", checkID, "payment", payment)
+
+	// Store current status to restore it in case of errors
+	originalCurrentExpected := accounting.currentExpected
+	originalCurrentIncoming := accounting.currentIncoming
+
+	check := accounting.openChecks[checkID]
+
+	// Update current expected cash flow
+	accounting.currentExpected += check.Price
+
+	// Update current cash flow
+	accounting.currentIncoming += payment
+
+	// Update list of opened checks
+	delete(accounting.openChecks, checkID)
+
+	// update list of closed checks
+	closedCheck := closedCheck{
+		Check: check,
+		Payed: payment,
+	}
+	accounting.closedChecks[checkID] = closedCheck
+
+	err := accounting.persist()
+	if err != nil {
+		// Restore updated information
+		accounting.currentExpected = originalCurrentExpected
+		accounting.currentIncoming = originalCurrentIncoming
+		accounting.openChecks[checkID] = check
+		delete(accounting.closedChecks, checkID)
+
+		error := fmt.Errorf("Unable to persist updated current accounting day. Reason: %s", err)
+		log.Log.Error("Error in paying check", "checkID", checkID, "payment", payment, "error", error)
+		log.Log.Debug("Exiting PayCheck")
+	}
+
+	log.Log.Debug("Exiting PayCheck")
+	return nil
+}
+
+func (accounting *accountingSystem) restore() error {
+	log.Log.Debug("Entering restore")
+	var operationError error
+
+	// Check if currentAccountingDay has been set
+	if len(accounting.currentAccountingDay) == 0 {
+		operationError = fmt.Errorf("Current Accounting Day must be set before restoring it")
+		log.Log.Error("Error in restoring current accounting", "error", operationError)
+	} else {
+		key := ACCOUNTING_DAYS_KEY + persistency.BUCKET_SEPARATOR + accounting.currentAccountingDay
+		err := persistency.BoltDBPersistency.ReadData(key, accounting)
+		if err != nil {
+			operationError = fmt.Errorf("Unable to read current accounting. Reason: %s", err)
+			log.Log.Error("Error in restoring current accounting", "error", operationError)
+		}
+	}
+
+	log.Log.Debug("Exiting restore")
+	return operationError
+}
+
+func (accounting *accountingSystem) persist() error {
+	log.Log.Debug("Entering persist")
+	var operationError error
+
+	// Check if currentAccountingDay has been set
+	if len(accounting.currentAccountingDay) == 0 {
+		operationError = fmt.Errorf("Current Accounting Day must be set before persisting it")
+		log.Log.Error("Error in persisting current accounting", "error", operationError)
+	} else {
+		key := ACCOUNTING_DAYS_KEY + persistency.BUCKET_SEPARATOR + accounting.currentAccountingDay
+		err := persistency.BoltDBPersistency.WriteData(key, accounting)
+		if err != nil {
+			operationError = fmt.Errorf("Unable to persist current accounting. Reason: %s", err)
+			log.Log.Error("Error in persisting current accounting", "error", operationError)
+		}
+	}
+
+	log.Log.Debug("Exiting persist")
+	return operationError
 }
