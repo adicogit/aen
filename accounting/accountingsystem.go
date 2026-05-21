@@ -122,6 +122,38 @@ func (accounting *accountingSystem) GetAccountingDays() ([]string, error) {
 	return result, nil
 }
 
+func (accounting *accountingSystem) GetCurrentIncoming() (int, error) {
+	log.Log.Debug("Entering GetCurrentIncoming")
+
+	// Check if currentAccountingDay has been set
+	if len(accounting.currentAccountingDay) == 0 {
+		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
+		log.Log.Error("Error in getting current incoming", "error", error)
+		log.Log.Debug("Exiting GetCurrentIncoming")
+		return 0, error
+	}
+
+	result := accounting.currentIncoming
+	log.Log.Debug("Exiting GetCurrentIncoming", "currentIncoming", result)
+	return result, nil
+}
+
+func (accounting *accountingSystem) GetCurrentExpectedIncoming() (int, error) {
+	log.Log.Debug("Entering GetCurrentExpectedIncoming")
+
+	// Check if currentAccountingDay has been set
+	if len(accounting.currentAccountingDay) == 0 {
+		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
+		log.Log.Error("Error in getting current expected incoming", "error", error)
+		log.Log.Debug("Exiting GetCurrentExpectedIncoming")
+		return 0, error
+	}
+
+	result := accounting.currentExpected
+	log.Log.Debug("Exiting GetCurrentExpectedIncoming", "currentExpectedIncoming", result)
+	return result, nil
+}
+
 func (accounting *accountingSystem) CloseCurrentAccountingDay() error {
 	log.Log.Debug("Entering CloseCurrentAccountingDay")
 
