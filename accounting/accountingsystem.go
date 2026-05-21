@@ -157,6 +157,30 @@ func (accounting *accountingSystem) GetCurrentExpectedIncoming() (int, error) {
 func (accounting *accountingSystem) CloseCurrentAccountingDay() error {
 	log.Log.Debug("Entering CloseCurrentAccountingDay")
 
+	// Check if currentAccountingDay has been set
+	if len(accounting.currentAccountingDay) == 0 {
+		error := fmt.Errorf("Current Accounting Day must be set before performing any operation it")
+		log.Log.Error("Error in closing current acconting day", "error", error)
+		log.Log.Debug("Exiting GetOpenChCloseCurrentAccountingDayeckIDs")
+		return error
+	}
+
+	// Store current accounting day
+	err := accounting.persist()
+	if err != nil {
+		error := fmt.Errorf("Unable to persist current accounting. Reason: %s", err)
+		log.Log.Error("Error in closing current acconting day", "error", error)
+		log.Log.Debug("Exiting CloseCurrentAccountingDay")
+		return error
+	}
+
+	// Reset current accounting data
+	accounting.currentAccountingDay = ""
+	accounting.currentExpected = 0
+	accounting.currentIncoming = 0
+	accounting.closedChecks = make(map[string]closedCheck)
+	accounting.openChecks = make(map[string]payment.Check)
+
 	log.Log.Debug("Exiting CloseCurrentAccountingDay")
 	return nil
 }
