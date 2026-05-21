@@ -55,11 +55,16 @@ func (accounting *accountingSystem) SetAccountingDay(date string) error {
 		return error
 	}
 
+	// Synchronize changes
+	accounting.mu.Lock()
+
 	currentAccountingDay := accounting.currentAccountingDay
 	// Add date as available accounting date
 	var days []string
 	err = persistency.BoltDBPersistency.ReadData(ACCOUNTING_DAYS_KEY, days)
 	if err != nil {
+		// Release lock
+		accounting.mu.Unlock()
 		error := fmt.Errorf("Unable to read data from DB. Reason: %s", err)
 		log.Log.Error("Error in trying to read data from DB", "key", ACCOUNTING_DAYS_KEY, "error", error)
 		log.Log.Debug("Exiting SetAccountingDay")
@@ -75,6 +80,10 @@ func (accounting *accountingSystem) SetAccountingDay(date string) error {
 		if err != nil {
 			// Restore current accounting day to saved value
 			accounting.currentAccountingDay = currentAccountingDay
+
+			// Release lock
+			accounting.mu.Unlock()
+
 			error := fmt.Errorf("Unable to persist updated list of accounting days. Reason: %s", err)
 			log.Log.Error("Error in trying to persist updated list of accounting days", "key", ACCOUNTING_DAYS_KEY, "data", days, "error", error)
 			log.Log.Debug("Exiting SetAccountingDay")
@@ -88,12 +97,19 @@ func (accounting *accountingSystem) SetAccountingDay(date string) error {
 		err = accounting.restore()
 		if err != nil {
 			accounting.currentAccountingDay = currentAccountingDay
+
+			// Release lock
+			accounting.mu.Unlock()
+
 			error := fmt.Errorf("Unable to read accounting day %s. Reason: %s", accounting.currentAccountingDay, err)
 			log.Log.Error("Error in trying to read current accounting day", "accountingDay", date, "error", error)
 			log.Log.Debug("Exiting SetAccountingDay")
 			return error
 		}
 	}
+
+	// Release lock
+	accounting.mu.Unlock()
 
 	log.Log.Debug("Exiting SetAccountingDay")
 	return nil
@@ -125,8 +141,14 @@ func (accounting *accountingSystem) GetAccountingDays() ([]string, error) {
 func (accounting *accountingSystem) GetCurrentIncoming() (int, error) {
 	log.Log.Debug("Entering GetCurrentIncoming")
 
+	// Synchronize changes
+	accounting.mu.Lock()
+
 	// Check if currentAccountingDay has been set
 	if len(accounting.currentAccountingDay) == 0 {
+		// Release lock
+		accounting.mu.Unlock()
+
 		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
 		log.Log.Error("Error in getting current incoming", "error", error)
 		log.Log.Debug("Exiting GetCurrentIncoming")
@@ -134,6 +156,10 @@ func (accounting *accountingSystem) GetCurrentIncoming() (int, error) {
 	}
 
 	result := accounting.currentIncoming
+
+	// Release lock
+	accounting.mu.Unlock()
+
 	log.Log.Debug("Exiting GetCurrentIncoming", "currentIncoming", result)
 	return result, nil
 }
@@ -141,8 +167,14 @@ func (accounting *accountingSystem) GetCurrentIncoming() (int, error) {
 func (accounting *accountingSystem) GetCurrentExpectedIncoming() (int, error) {
 	log.Log.Debug("Entering GetCurrentExpectedIncoming")
 
+	// Synchronize changes
+	accounting.mu.Lock()
+
 	// Check if currentAccountingDay has been set
 	if len(accounting.currentAccountingDay) == 0 {
+		// Release lock
+		accounting.mu.Unlock()
+
 		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
 		log.Log.Error("Error in getting current expected incoming", "error", error)
 		log.Log.Debug("Exiting GetCurrentExpectedIncoming")
@@ -150,6 +182,10 @@ func (accounting *accountingSystem) GetCurrentExpectedIncoming() (int, error) {
 	}
 
 	result := accounting.currentExpected
+
+	// Release lock
+	accounting.mu.Unlock()
+
 	log.Log.Debug("Exiting GetCurrentExpectedIncoming", "currentExpectedIncoming", result)
 	return result, nil
 }
@@ -157,8 +193,14 @@ func (accounting *accountingSystem) GetCurrentExpectedIncoming() (int, error) {
 func (accounting *accountingSystem) CloseCurrentAccountingDay() error {
 	log.Log.Debug("Entering CloseCurrentAccountingDay")
 
+	// Synchronize changes
+	accounting.mu.Lock()
+
 	// Check if currentAccountingDay has been set
 	if len(accounting.currentAccountingDay) == 0 {
+		// Release lock
+		accounting.mu.Unlock()
+
 		error := fmt.Errorf("Current Accounting Day must be set before performing any operation it")
 		log.Log.Error("Error in closing current acconting day", "error", error)
 		log.Log.Debug("Exiting GetOpenChCloseCurrentAccountingDayeckIDs")
@@ -168,6 +210,9 @@ func (accounting *accountingSystem) CloseCurrentAccountingDay() error {
 	// Store current accounting day
 	err := accounting.persist()
 	if err != nil {
+		// Release lock
+		accounting.mu.Unlock()
+
 		error := fmt.Errorf("Unable to persist current accounting. Reason: %s", err)
 		log.Log.Error("Error in closing current acconting day", "error", error)
 		log.Log.Debug("Exiting CloseCurrentAccountingDay")
@@ -181,6 +226,9 @@ func (accounting *accountingSystem) CloseCurrentAccountingDay() error {
 	accounting.closedChecks = make(map[string]closedCheck)
 	accounting.openChecks = make(map[string]payment.Check)
 
+	// Release lock
+	accounting.mu.Unlock()
+
 	log.Log.Debug("Exiting CloseCurrentAccountingDay")
 	return nil
 }
@@ -188,8 +236,14 @@ func (accounting *accountingSystem) CloseCurrentAccountingDay() error {
 func (accounting *accountingSystem) GetOpenCheckIDs() ([]string, error) {
 	log.Log.Debug("Entering GetOpenCheckIDs")
 
+	// Synchronize changes
+	accounting.mu.Lock()
+
 	// Check if currentAccountingDay has been set
 	if len(accounting.currentAccountingDay) == 0 {
+		// Release lock
+		accounting.mu.Unlock()
+
 		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
 		log.Log.Error("Error in getting list of opened check IDs", "error", error)
 		log.Log.Debug("Exiting GetOpenCheckIDs")
@@ -197,6 +251,10 @@ func (accounting *accountingSystem) GetOpenCheckIDs() ([]string, error) {
 	}
 
 	result := slices.Collect(maps.Keys(accounting.openChecks))
+
+	// Release lock
+	accounting.mu.Unlock()
+
 	log.Log.Debug("Exiting GetOpenCheckIDs", "result", result)
 	return result, nil
 }
@@ -204,8 +262,14 @@ func (accounting *accountingSystem) GetOpenCheckIDs() ([]string, error) {
 func (accounting *accountingSystem) GetCheck(checkID string) (payment.Check, error) {
 	log.Log.Debug("Entering GetCheck", "checkID", checkID)
 
+	// Synchronize changes
+	accounting.mu.Lock()
+
 	// Check if currentAccountingDay has been set
 	if len(accounting.currentAccountingDay) == 0 {
+		// Release lock
+		accounting.mu.Unlock()
+
 		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
 		log.Log.Error("Error in getting specified check", "checkID", checkID, "error", error)
 		log.Log.Debug("Exiting GetOpenCheckIDs")
@@ -217,12 +281,18 @@ func (accounting *accountingSystem) GetCheck(checkID string) (payment.Check, err
 		closedCheck, contained := accounting.closedChecks[checkID]
 		if !contained {
 			error := fmt.Errorf("Unable to find out requested data. Check ID: %s", checkID)
+			// Release lock
+			accounting.mu.Unlock()
+
 			log.Log.Error("Error in looking for check IDs", "checkID", checkID, "error", error)
 			log.Log.Debug("Exiting GetOpenCheckIDs")
 			return payment.Check{}, error
 		}
 		result = closedCheck.Check
 	}
+
+	// Release lock
+	accounting.mu.Unlock()
 
 	log.Log.Debug("Exiting GetOpenCheckIDs", "result", result)
 	return result, nil
@@ -231,8 +301,14 @@ func (accounting *accountingSystem) GetCheck(checkID string) (payment.Check, err
 func (accounting *accountingSystem) AddCheck(check payment.Check) error {
 	log.Log.Debug("Entering AddCheck", "check", check)
 
+	// Synchronize changes
+	accounting.mu.Lock()
+
 	// Check if currentAccountingDay has been set
 	if len(accounting.currentAccountingDay) == 0 {
+		// Release lock
+		accounting.mu.Unlock()
+
 		error := fmt.Errorf("Current Accounting Day must be set before setting any information about it")
 		log.Log.Error("Error in adding new check", "check", check, "error", error)
 		log.Log.Debug("Exiting AddCheck")
@@ -247,11 +323,17 @@ func (accounting *accountingSystem) AddCheck(check payment.Check) error {
 	if err != nil {
 		// Error in serializing the new check. Must remove it from the list of open check aborting the operation
 		delete(accounting.openChecks, check.ID)
+		// Release lock
+		accounting.mu.Unlock()
+
 		error := fmt.Errorf("Unable to add new check with ID %s. Reason: %s", check.ID, err)
 		log.Log.Error("Error in adding new check", "check", check, "error", error)
 		log.Log.Debug("Exiting AddCheck")
 		return error
 	}
+
+	// Release lock
+	accounting.mu.Unlock()
 
 	log.Log.Debug("Exiting AddCheck")
 	return nil
@@ -259,6 +341,9 @@ func (accounting *accountingSystem) AddCheck(check payment.Check) error {
 
 func (accounting *accountingSystem) PayCheck(checkID string, payment int) error {
 	log.Log.Debug("Entering PayCheck", "checkID", checkID, "payment", payment)
+
+	// Synchronize changes
+	accounting.mu.Lock()
 
 	// Store current status to restore it in case of errors
 	originalCurrentExpected := accounting.currentExpected
@@ -290,10 +375,16 @@ func (accounting *accountingSystem) PayCheck(checkID string, payment int) error 
 		accounting.openChecks[checkID] = check
 		delete(accounting.closedChecks, checkID)
 
+		// Release lock
+		accounting.mu.Unlock()
+
 		error := fmt.Errorf("Unable to persist updated current accounting day. Reason: %s", err)
 		log.Log.Error("Error in paying check", "checkID", checkID, "payment", payment, "error", error)
 		log.Log.Debug("Exiting PayCheck")
 	}
+
+	// Release lock
+	accounting.mu.Unlock()
 
 	log.Log.Debug("Exiting PayCheck")
 	return nil
