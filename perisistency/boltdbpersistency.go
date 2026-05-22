@@ -1,6 +1,8 @@
 package persistency
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"strings"
 	"time"
@@ -8,6 +10,10 @@ import (
 	"aen.it/poolmanager/config"
 	"aen.it/poolmanager/log"
 	"github.com/boltdb/bolt"
+)
+
+const (
+	BUCKET_SEPARATOR = ":"
 )
 
 type boltDBPersistency struct {
@@ -55,7 +61,7 @@ func (db *boltDBPersistency) getKeyAndBucketUsingTX(tx *bolt.Tx, key string) (st
 	log.Log.Debug("Entering getKeyAndBucketUsingTX", "key", key)
 
 	log.Log.Info("Build bucket chanin and read key name")
-	buckets := strings.Split(key, ":")
+	buckets := strings.Split(key, BUCKET_SEPARATOR)
 	if len(buckets) <= 1 {
 		err := errors.New("Key name must contain at least one bucket name. It must be in the format <bucket name>:...:<bucket name>:<key name>")
 		log.Log.Error("Wrong key format fo persisting layer", "error", err)
@@ -105,9 +111,8 @@ func (db *boltDBPersistency) getKeyAndBucket(key string) (string, *bolt.Bucket, 
 	return keyName, bucketToUse, nil
 }
 
-func (db *boltDBPersistency) ReadData(key string) ([]byte, error) {
+func (db *boltDBPersistency) ReadData(key string, data interface{}) error {
 	log.Log.Debug("Entering ReadData")
-	var data []byte
 
 	// If DB is not opened,  open it
 	db.OpenDB()
@@ -115,32 +120,42 @@ func (db *boltDBPersistency) ReadData(key string) ([]byte, error) {
 	keyName, bucketToUse, err := db.getKeyAndBucket(key)
 	if err != nil {
 		log.Log.Error("Failed to create needed chain for specified key", "key", key, "error", err)
-		return nil, err
+		return err
 	}
 	if err := db.bolt.View(func(tx *bolt.Tx) error {
 		// get specified ley value
-		data = bucketToUse.Get([]byte(keyName))
-
+		dataRead := bucketToUse.Get([]byte(keyName))
+		err = convertFromByteArray(dataRead, data)
+		if err != nil {
+			log.Log.Error("Failed to deserialize object for specified key", "key", keyName, "data read", dataRead, "error", err)
+			return err
+		}
 		return nil
 	}); err != nil {
 		log.Log.Error("Failed to read object for specified key", "key", keyName, "error", err)
-		return nil, err
+		return err
 	}
 
 	log.Log.Debug("Exiting ReadData")
-	return data, nil
+	return nil
 }
 
-func (db *boltDBPersistency) WriteData(key string, data []byte) error {
+func (db *boltDBPersistency) WriteData(key string, data interface{}) error {
 	log.Log.Debug("Entering WriteData")
 	// If DB is not opened,  open it
 	db.OpenDB()
+
+	byteArray, err := convertToByteArray(data)
+	if err != nil {
+		log.Log.Error("Failed to serialize specified object", "data", data, "error", err)
+		return err
+	}
 
 	if err := db.bolt.Update(func(tx *bolt.Tx) error {
 		keyName, bucketToUse, err := db.getKeyAndBucketUsingTX(tx, key)
 
 		// get value fot specified key
-		err = bucketToUse.Put([]byte(keyName), data)
+		err = bucketToUse.Put([]byte(keyName), byteArray)
 
 		return err
 	}); err != nil {
@@ -150,4 +165,26 @@ func (db *boltDBPersistency) WriteData(key string, data []byte) error {
 
 	log.Log.Debug("Exiting WriteData")
 	return nil
+}
+
+func convertToByteArray(data interface{}) ([]byte, error) {
+	var buffer bytes.Buffer
+
+	enc := gob.NewEncoder(&buffer)
+	err := enc.Encode(&data)
+	if err != nil {
+		log.Log.Error("Unable to convert data into byte array", "data", data, "error", err)
+	}
+	return buffer.Bytes(), err
+}
+
+func convertFromByteArray(dataToRead []byte, data interface{}) error {
+	buffer := bytes.NewBuffer(dataToRead)
+
+	dec := gob.NewDecoder(buffer)
+	err := dec.Decode(&data)
+	if err != nil {
+		log.Log.Error("Unable to convert data into object", "data", dataToRead, "error", err)
+	}
+	return err
 }
