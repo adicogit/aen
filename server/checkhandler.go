@@ -79,15 +79,26 @@ func (server *Server) getCheck(w http.ResponseWriter, r *http.Request) {
 func (server *Server) payCheck(w http.ResponseWriter, r *http.Request) {
 	log.Log.Debug("Entering payCheck")
 	w.Header().Set("Content-Type", "application/json")
-	vars := mux.Vars(r)
-	checkID := vars["checkID"]
-	if checkID == "" {
+
+	// Read check ID from the request
+	var checkID string
+	if err := json.NewDecoder(r.Body).Decode(&checkID); err != nil || len(checkID) <= 0 {
 		log.Log.Error("Check ID is required")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(errorResponse{Error: "Check ID is required"})
 		return
 	}
-	if err := server.accountingManager.PayCheck(checkID); err != nil {
+
+	// Read payment from the request
+	var payment int
+	if err := json.NewDecoder(r.Body).Decode(&payment); err != nil || payment <= 0 {
+		log.Log.Error("Failed to decode request body", "error", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(errorResponse{Error: fmt.Sprintf("Invalid request body: %v", err)})
+		return
+	}
+
+	if err := server.accountingManager.PayCheck(checkID, payment); err != nil {
 		log.Log.Error("Failed to pay check", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(errorResponse{Error: fmt.Sprintf("Failed to pay check: %v", err)})

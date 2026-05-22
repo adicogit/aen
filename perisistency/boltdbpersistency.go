@@ -57,7 +57,7 @@ func (db *boltDBPersistency) CloseDB() {
 	log.Log.Debug("Exiting 	CloseDB")
 }
 
-func (db *boltDBPersistency) getKeyAndBucketUsingTX(tx *bolt.Tx, key string) (string, *bolt.Bucket, error) {
+func (db *boltDBPersistency) getKeyAndBucketUsingTX(tx *bolt.Tx, key string, create bool) (string, *bolt.Bucket, error) {
 	log.Log.Debug("Entering getKeyAndBucketUsingTX", "key", key)
 
 	log.Log.Info("Build bucket chanin and read key name")
@@ -77,9 +77,26 @@ func (db *boltDBPersistency) getKeyAndBucketUsingTX(tx *bolt.Tx, key string) (st
 	for _, bucket := range buckets {
 		var err error
 		if bucketToUse == nil {
-			bucketToUse, err = tx.CreateBucketIfNotExists([]byte(bucket))
+			if create {
+				bucketToUse, err = tx.CreateBucketIfNotExists([]byte(bucket))
+			} else {
+				bucketToUse = tx.Bucket([]byte(bucket))
+			}
 		} else {
-			bucketToUse, err = bucketToUse.CreateBucketIfNotExists([]byte(bucket))
+			if create {
+				bucketToUse, err = bucketToUse.CreateBucketIfNotExists([]byte(bucket))
+			} else {
+				bucketToUse = bucketToUse.Bucket([]byte(bucket))
+			}
+		}
+		if bucketToUse == nil && err == nil {
+			if create {
+				err = errors.New("Bucket not found")
+			} else {
+				// For read operations, just return nil bucket to indicate not found
+				log.Log.Debug("Bucket not found during read", "key", key)
+				return keyName, nil, nil
+			}
 		}
 		if err != nil {
 			log.Log.Error("Unable to reach target bucket for provided key", "key", key, "error", err)
@@ -92,24 +109,7 @@ func (db *boltDBPersistency) getKeyAndBucketUsingTX(tx *bolt.Tx, key string) (st
 	return keyName, bucketToUse, nil
 }
 
-func (db *boltDBPersistency) getKeyAndBucket(key string) (string, *bolt.Bucket, error) {
-	log.Log.Debug("Entering getKeyAndBucket", "key", key)
-
-	var keyName string
-	var bucketToUse *bolt.Bucket
-	var err error
-	if err = db.bolt.Update(func(tx *bolt.Tx) error {
-		keyName, bucketToUse, err = db.getKeyAndBucketUsingTX(tx, key)
-		return err
-	}); err != nil {
-		log.Log.Error("Failed to create needed chain for specified key", "key", key, "error", err)
-		log.Log.Debug("Exiting getKeyAndBucket", "final key name", keyName, "error", err)
-		return keyName, nil, err
-	}
-
-	log.Log.Debug("Exiting getKeyAndBucket", "final key name", keyName)
-	return keyName, bucketToUse, nil
-}
+// Removed getKeyAndBucket as it incorrectly returned bucket pointers across transactions.
 
 func (db *boltDBPersistency) ReadData(key string, data interface{}) error {
 	log.Log.Debug("Entering ReadData")
@@ -117,14 +117,21 @@ func (db *boltDBPersistency) ReadData(key string, data interface{}) error {
 	// If DB is not opened,  open it
 	db.OpenDB()
 
-	keyName, bucketToUse, err := db.getKeyAndBucket(key)
-	if err != nil {
-		log.Log.Error("Failed to create needed chain for specified key", "key", key, "error", err)
-		return err
-	}
 	if err := db.bolt.View(func(tx *bolt.Tx) error {
+		keyName, bucketToUse, err := db.getKeyAndBucketUsingTX(tx, key, false)
+		if err != nil {
+			return err
+		}
+		if bucketToUse == nil {
+			// Bucket not found, nothing to read
+			return nil
+		}
 		// get specified ley value
 		dataRead := bucketToUse.Get([]byte(keyName))
+		if dataRead == nil {
+			// Key not found
+			return nil
+		}
 		err = convertFromByteArray(dataRead, data)
 		if err != nil {
 			log.Log.Error("Failed to deserialize object for specified key", "key", keyName, "data read", dataRead, "error", err)
@@ -132,7 +139,7 @@ func (db *boltDBPersistency) ReadData(key string, data interface{}) error {
 		}
 		return nil
 	}); err != nil {
-		log.Log.Error("Failed to read object for specified key", "key", keyName, "error", err)
+		log.Log.Error("Failed to read object for specified key", "key", key, "error", err)
 		return err
 	}
 
@@ -152,7 +159,7 @@ func (db *boltDBPersistency) WriteData(key string, data interface{}) error {
 	}
 
 	if err := db.bolt.Update(func(tx *bolt.Tx) error {
-		keyName, bucketToUse, err := db.getKeyAndBucketUsingTX(tx, key)
+		keyName, bucketToUse, err := db.getKeyAndBucketUsingTX(tx, key, true)
 
 		// get value fot specified key
 		err = bucketToUse.Put([]byte(keyName), byteArray)
@@ -171,7 +178,7 @@ func convertToByteArray(data interface{}) ([]byte, error) {
 	var buffer bytes.Buffer
 
 	enc := gob.NewEncoder(&buffer)
-	err := enc.Encode(&data)
+	err := enc.Encode(data)
 	if err != nil {
 		log.Log.Error("Unable to convert data into byte array", "data", data, "error", err)
 	}
@@ -182,7 +189,7 @@ func convertFromByteArray(dataToRead []byte, data interface{}) error {
 	buffer := bytes.NewBuffer(dataToRead)
 
 	dec := gob.NewDecoder(buffer)
-	err := dec.Decode(&data)
+	err := dec.Decode(data)
 	if err != nil {
 		log.Log.Error("Unable to convert data into object", "data", dataToRead, "error", err)
 	}

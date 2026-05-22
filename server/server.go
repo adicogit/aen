@@ -86,6 +86,6 @@ func (server *Server) Start() error {
 
 func (server *Server) Shutdown() {
 	log.Log.Info("Entering Server.Shutdown")
-	server.accountingManager.Close()
+	//server.accountingManager.Close()
 	log.Log.Info("Exiting Server.Shutdown")
 }
