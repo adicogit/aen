@@ -42,10 +42,15 @@ func (db *boltDBPersistency) OpenDB() error {
 	var err error
 	err = nil
 	if db.bolt == nil {
-		db.bolt, err = bolt.Open(config.BoltDBConfig.DBpath, 0600, &bolt.Options{Timeout: 1 * time.Second})
+		db.bolt, err = bolt.Open(db.dbPath, 0600, &bolt.Options{Timeout: 1 * time.Second})
+		if err != nil {
+			log.Log.Error("Unable to open DB", "dbPath", db.dbPath, "error", err)
+			log.Log.Debug("Exiting OpenDB")
+			return err
+		}
 	}
-	log.Log.Debug("Exiting 	OpenDB")
-	return err
+	log.Log.Debug("Exiting OpenDB")
+	return nil
 }
 
 func (db *boltDBPersistency) CloseDB() {
@@ -115,7 +120,10 @@ func (db *boltDBPersistency) ReadData(key string, data interface{}) error {
 	log.Log.Debug("Entering ReadData")
 
 	// If DB is not opened,  open it
-	db.OpenDB()
+	err := db.OpenDB()
+	if err != nil {
+		return err
+	}
 
 	if err := db.bolt.View(func(tx *bolt.Tx) error {
 		keyName, bucketToUse, err := db.getKeyAndBucketUsingTX(tx, key, false)
@@ -150,7 +158,10 @@ func (db *boltDBPersistency) ReadData(key string, data interface{}) error {
 func (db *boltDBPersistency) WriteData(key string, data interface{}) error {
 	log.Log.Debug("Entering WriteData")
 	// If DB is not opened,  open it
-	db.OpenDB()
+	err := db.OpenDB()
+	if err != nil {
+		return err
+	}
 
 	byteArray, err := convertToByteArray(data)
 	if err != nil {
