@@ -60,6 +60,7 @@ func (gp *GamePayment) StartCountingPayment() error {
 	// Only reset check and itemList if starting from Stopped (new payment)
 	// If resuming from Suspended, preserve the existing itemList
 	if gp.status == Stopped {
+		gp.id = uuid.New().String()
 		gp.check = Check{}
 		gp.itemList = make([]warehouse.Item, 0)
 		gp.previousDuration = time.Duration(0)

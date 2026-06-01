@@ -108,6 +108,18 @@ func (server *Server) actionGameStation(w http.ResponseWriter, r *http.Request) 
 		err = gs.StartMatch()
 	case "stop":
 		err = gs.CloseMatch()
+		if err == nil {
+			check, checkErr := gs.GetCheck()
+			if checkErr == nil {
+				if addErr := server.accountingManager.AddCheck(check); addErr != nil {
+					log.Log.Error("Failed to add check to accounting manager upon close", "checkID", check.ID, "error", addErr)
+				} else {
+					log.Log.Info("Successfully added check to accounting manager upon close", "checkID", check.ID)
+				}
+			} else {
+				log.Log.Error("Failed to get check from gaming station upon close", "error", checkErr)
+			}
+		}
 	case "suspend":
 		err = gs.PauseMatch()
 	default:

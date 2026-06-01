@@ -2,6 +2,11 @@ package accounting
 
 import "aen.it/poolmanager/payment"
 
+type ClosedCheck struct {
+	Check payment.Check `json:"check"`
+	Payed int           `json:"payed"`
+}
+
 type Accounting interface {
 	// Get list of already available accounting days
 	GetAccountingDays() ([]string, error)
@@ -23,4 +28,8 @@ type Accounting interface {
 	AddCheck(check payment.Check) error
 	// Pay check for currently set accounting day. Returns an eror no accounting day has been set.
 	PayCheck(checkID string, payment int) error
+	// Get all open checks for currently set accounting day.
+	GetOpenChecks() ([]payment.Check, error)
+	// Get all closed checks for currently set accounting day.
+	GetClosedChecks() ([]ClosedCheck, error)
 }

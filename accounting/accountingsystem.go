@@ -431,3 +431,46 @@ func (accounting *accountingSystem) persist() error {
 	log.Log.Debug("Exiting persist")
 	return operationError
 }
+
+func (accounting *accountingSystem) GetOpenChecks() ([]payment.Check, error) {
+	log.Log.Debug("Entering GetOpenChecks")
+	accounting.mu.RLock()
+	defer accounting.mu.RUnlock()
+
+	if len(accounting.CurrentAccountingDay) == 0 {
+		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
+		log.Log.Error("Error in getting open checks", "error", error)
+		return nil, error
+	}
+
+	result := make([]payment.Check, 0, len(accounting.OpenChecks))
+	for _, check := range accounting.OpenChecks {
+		result = append(result, check)
+	}
+
+	log.Log.Debug("Exiting GetOpenChecks", "count", len(result))
+	return result, nil
+}
+
+func (accounting *accountingSystem) GetClosedChecks() ([]ClosedCheck, error) {
+	log.Log.Debug("Entering GetClosedChecks")
+	accounting.mu.RLock()
+	defer accounting.mu.RUnlock()
+
+	if len(accounting.CurrentAccountingDay) == 0 {
+		error := fmt.Errorf("Current Accounting Day must be set before reading any information about it")
+		log.Log.Error("Error in getting closed checks", "error", error)
+		return nil, error
+	}
+
+	result := make([]ClosedCheck, 0, len(accounting.ClosedChecks))
+	for _, cc := range accounting.ClosedChecks {
+		result = append(result, ClosedCheck{
+			Check: cc.Check,
+			Payed: cc.Payed,
+		})
+	}
+
+	log.Log.Debug("Exiting GetClosedChecks", "count", len(result))
+	return result, nil
+}

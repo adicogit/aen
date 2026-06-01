@@ -55,6 +55,61 @@
         <img src="images/icons/settings.png" alt="Config" id="configIconImg" data-translate-alt="config_icon_alt">
     </button>
 
+    <!-- Cash button on the left -->
+    <button class="cash-button" id="Cash" aria-label="Cassa" title="Cassa" data-translate-title="cash_button">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28" class="cash-icon-svg">
+            <path d="M19 6h-2V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v3H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM9 4h6v2H9V4zm10 16H5V8h14v12zm-8-3H7v-2h4v2zm6 0h-4v-2h4v2zm-6-4H7v-2h4v2zm6 0h-4v-2h4v2z"/>
+        </svg>
+    </button>
+
+    <!-- Cash Drawer Panel (Transparency/Glassmorphism) -->
+    <div id="cashDrawer" class="cash-drawer">
+        <div class="cash-drawer-header">
+            <h2 data-translate="cash_panel_title">Conti del Giorno</h2>
+            <button id="closeCashDrawer" class="btn-close-drawer" aria-label="Close">&times;</button>
+        </div>
+        <div id="currentAccountingDayContainer" class="current-accounting-day" style="display: none;">
+            <span id="currentAccountingDayDisplay"></span>
+            <button id="changeAccountingDayBtn" class="btn-change-day" title="Cambia giorno contabile" data-translate-title="change_accounting_day">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Accounting Day Picker -->
+        <div id="accountingDayPicker" class="accounting-day-picker" style="display: none;">
+            <h3 data-translate="select_accounting_day">Seleziona Giorno Contabile</h3>
+            <div class="date-picker-row">
+                <input type="date" id="accountingDayDate" class="date-picker-input">
+                <div class="date-picker-actions">
+                    <button id="confirmAccountingDay" class="btn btn-save" data-translate="ok">OK</button>
+                    <button id="cancelAccountingDay" class="btn btn-cancel" data-translate="cancel" style="display: none;">Annulla</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="cash-drawer-body">
+            <!-- Totals Overview -->
+            <div class="cash-totals-container">
+                <div class="cash-total-card">
+                    <span class="total-label" data-translate="cash_total_incoming">Entrate Effettive</span>
+                    <span id="cashTotalIncoming" class="total-value">0.00 €</span>
+                </div>
+                <div class="cash-total-card">
+                    <span class="total-label" data-translate="cash_total_expected">Entrate Attese</span>
+                    <span id="cashTotalExpected" class="total-value">0.00 €</span>
+                </div>
+            </div>
+
+            <!-- Checks List -->
+            <h3 data-translate="cash_checks_list">Elenco Conti</h3>
+            <div id="cashChecksList" class="cash-checks-list">
+                <!-- Checks loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
     <!-- Consumption Modal -->
     <div id="consumptionModal" class="modal">
         <div class="modal-content">
@@ -114,6 +169,7 @@
     </div>
 
     <script src="scripts/utils.js"></script>
+    <script src="scripts/cashScript.js"></script>
     <script src="scripts/consumptionScript.js"></script>
     <script src="scripts/gamingStationScript.js"></script>
     <script src="scripts/script.js"></script>

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -37,6 +38,15 @@ func (server *Server) Start() error {
 	server.billiardManager = billiardroom.Manager
 	server.accountingManager = accounting.AccountingSystem
 
+	if len(server.accountingManager.GetCurrentAccountingDay()) == 0 {
+		today := time.Now().Format("20060102")
+		if err := server.accountingManager.SetAccountingDay(today); err != nil {
+			log.Log.Error("Failed to initialize accounting day to today's date", "date", today, "error", err)
+		} else {
+			log.Log.Info("Successfully initialized accounting day to today's date", "date", today)
+		}
+	}
+
 	router := mux.NewRouter().StrictSlash(true)
 
 	// API to handle UI configuration
@@ -50,6 +60,10 @@ func (server *Server) Start() error {
 	router.HandleFunc("/api/v1/gamestations/{gsID}/action", server.actionGameStation).Methods("POST")
 	router.HandleFunc("/api/v1/gamestations/{gsID}/status", server.getGameStationStatus).Methods("GET")
 	router.HandleFunc("/api/v1/gamestations/{gsID}/consumption", server.addGameStationConsumption).Methods("POST")
+
+	// API to handle accounting day
+	router.HandleFunc("/api/v1/accountingday", server.getAccountingDay).Methods("GET")
+	router.HandleFunc("/api/v1/accountingday", server.setAccountingDay).Methods("PUT")
 
 	// API to handle checks
 	router.HandleFunc("/api/v1/checks", server.getChecks).Methods("GET")
