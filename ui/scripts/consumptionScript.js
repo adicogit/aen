@@ -168,6 +168,9 @@ async function saveConsumptions() {
         return;
     }
     
+    const hasDay = await requireAccountingDay();
+    if (!hasDay) return;
+
     try {
         // Send consumption data to server
         const response = await fetch(`/api/v1/gamestations/${currentStationId}/consumption`, {

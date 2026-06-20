@@ -203,6 +203,9 @@ async function getGameStationStatus(id, useCache = true) {
 
 // Function to send action to game station
 async function sendGameStationAction(stationId, action) {
+    const hasDay = await requireAccountingDay();
+    if (!hasDay) return false;
+
     const API_URL = '/api/v1/gamestations/' + stationId + '/action';
 
     try {

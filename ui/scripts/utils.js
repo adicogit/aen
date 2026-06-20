@@ -49,4 +49,20 @@ function showErrorModal(message) {
     });
 }
 
-// Made with Bob
+async function requireAccountingDay() {
+    try {
+        const response = await fetch('/api/v1/accountingday');
+        const data = await response.json();
+        if (data.currentAccountingDay) {
+            return true;
+        }
+        const msg = getTranslation('cash_no_accounting_day', 'Nessun giorno contabile impostato. Imposta il giorno contabile dalla cassa.');
+        await showErrorModal(msg);
+        return false;
+    } catch (error) {
+        console.error('Error checking accounting day:', error);
+        const msg = getTranslation('network_error', 'Errore di rete');
+        await showErrorModal(msg);
+        return false;
+    }
+}

@@ -46,7 +46,8 @@
     "cash_close_checks_first": "Chiudi prima i conti aperti per cambiare giorno contabile",
     "select_accounting_day": "Seleziona Giorno Contabile",
     "change_accounting_day": "Cambia giorno contabile",
-    "cancel": "Annulla"
+    "cancel": "Annulla",
+    "cash_no_accounting_day": "Nessun giorno contabile impostato. Imposta il giorno contabile dalla cassa."
   },
   "en": {
     "welcome_title": "Billiard Manager",
@@ -95,6 +96,7 @@
     "cash_close_checks_first": "Close open checks first to change accounting day",
     "select_accounting_day": "Select Accounting Day",
     "change_accounting_day": "Change accounting day",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "cash_no_accounting_day": "No accounting day set. Please set it from the cash panel."
   }
 }

@@ -88,6 +88,12 @@ func (server *Server) actionGameStation(w http.ResponseWriter, r *http.Request) 
 	vars := mux.Vars(r)
 	id := vars["gsID"]
 
+	if len(server.accountingManager.GetCurrentAccountingDay()) == 0 {
+		log.Log.Error("Cannot perform game station action: no accounting day set")
+		http.Error(w, "No accounting day set. Please set the accounting day first.", http.StatusBadRequest)
+		return
+	}
+
 	var request gamestationAction
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
@@ -168,6 +174,12 @@ func (server *Server) addGameStationConsumption(w http.ResponseWriter, r *http.R
 	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	id := vars["gsID"]
+
+	if len(server.accountingManager.GetCurrentAccountingDay()) == 0 {
+		log.Log.Error("Cannot add consumption: no accounting day set")
+		http.Error(w, "No accounting day set. Please set the accounting day first.", http.StatusBadRequest)
+		return
+	}
 
 	var request gamestationConsumption
 	err := json.NewDecoder(r.Body).Decode(&request)
