@@ -274,6 +274,27 @@ function renderCheckCard(check, status, payedAmount = null) {
     const tableLabel = getTranslation('cash_table_name', 'Tavolo');
     const durationLabel = getTranslation('cash_duration', 'Durata');
 
+    // footer content: se aperto mostra i controlli di pagamento, se pagato mostra due colonne (atteso a sinistra tra parentesi, pagato a destra)
+    const footerHtml = status === 'open'
+        ? `
+            <div class="pay-controls">
+                <input class="pay-amount-input" type="number" min="0" step="0.01" value="${(check.Price / 100).toFixed(2)}" aria-label="Importo pagato" />
+                <button class="btn-pay-check" data-id="${check.ID}">
+                    ${getTranslation('cash_pay_button', 'Paga')}
+                </button>
+            </div>
+        `
+        : `
+            <div class="check-price-paid" style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                <div class="expected-amount" style="text-align:left;color:#666;font-size:0.95em;">
+                    (${formatPrice(check.Price)})
+                </div>
+                <div class="actual-amount" style="text-align:right;font-weight:600;">
+                    ${formatPrice(payedAmount !== null ? payedAmount : check.Price)}
+                </div>
+            </div>
+        `;
+
     card.innerHTML = `
         <div class="check-card-header">
             <div>
@@ -294,25 +315,39 @@ function renderCheckCard(check, status, payedAmount = null) {
         </div>
         ${itemsHtml}
         <div class="check-card-footer">
-            <div class="check-price-total">
-                ${formatPrice(payedAmount !== null ? payedAmount : check.Price)}
-            </div>
-            ${status === 'open' ? `
-                <button class="btn-pay-check" data-id="${check.ID}" data-price="${check.Price}">
-                    ${getTranslation('cash_pay_button', 'Paga')}
-                </button>
-            ` : ''}
+            ${footerHtml}
         </div>
     `;
 
     if (status === 'open') {
         const payBtn = card.querySelector('.btn-pay-check');
+        const payInput = card.querySelector('.pay-amount-input');
         if (payBtn) {
             payBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const checkId = payBtn.getAttribute('data-id');
-                const price = parseInt(payBtn.getAttribute('data-price'));
-                await handlePayCheck(checkId, price, check.GameStationName);
+                // leggi l'importo inserito in unità (es. euro), convertilo in centesimi
+                let amountCents;
+                if (payInput) {
+                    const parsed = parseFloat(payInput.value.replace(',', '.'));
+                    if (isNaN(parsed) || parsed < 0) {
+                        amountCents = check.Price; // fallback ai centesimi originali
+                    } else {
+                        amountCents = Math.round(parsed * 100);
+                    }
+                } else {
+                    amountCents = check.Price;
+                }
+                await handlePayCheck(checkId, amountCents, check.GameStationName);
+            });
+        }
+        // Enter sulla input attiva il pagamento
+        if (payInput) {
+            payInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    payBtn.click();
+                }
             });
         }
     }
