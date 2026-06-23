@@ -17,6 +17,17 @@
         <div id="container">
             <div class="flipper">
                 <div id="containerGamingStation">
+                    <!-- Gaming station area -->
+                    <!-- Pulsante Cassa spostato qui per farlo ruotare insieme al pannello -->
+                    <button class="cash-button" id="Cash" aria-label="Cassa" title="Cassa" data-translate-title="cash_button">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28" class="cash-icon-svg">
+                            <path d="M19 6h-2V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v3H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM9 4h6v2H9V4zm10 16H5V8h14v12zm-8-3H7v-2h4v2zm6 0h-4v-2h4v2zm-6-4H7v-2h4v2zm6 0h-4v-2h4v2z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Wrapper dedicato ai blocchi: usato dagli script per non toccare il pulsante -->
+                    <div id="gamingBlocks" class="gaming-blocks"></div>
+
                 </div>
                 <div id="containerConfigStation">
                     <div class="config-header">
@@ -25,18 +36,36 @@
 
                     <div class="config-panels-slider">
                         <!-- Panel 1 -->
-                        <div class="config-subpanel active" id="panel-1">
-                            <h2 data-translate="subpanel_1_title">Generale</h2>
+                        <div class="config-subpanel active" id="gamingStation-settings-panel">
+                            <h2 data-translate="gamingStation_settings_title">Gaming Stations</h2>
                             <p>Contenuto pannello 1...</p>
                         </div>
                         <!-- Panel 2 -->
-                        <div class="config-subpanel" id="panel-2">
-                            <h2 data-translate="subpanel_2_title">Display</h2>
-                            <p>Contenuto pannello 2...</p>
+                        <div class="config-subpanel" id="general-settings-panel">
+                            <h2 data-translate="general_settings_title">General</h2>
+                            <div class="settings-form">
+                                <label for="billiardRoomName" data-translate="billiard_room_name_label">Billiard room name</label>
+                                <input id="billiardRoomName" type="text" class="text-input" placeholder="Nome sala..." />
+
+                                <label for="backgroundImageUrl" data-translate="background_image_label">Background image</label>
+                                <div class="background-input-row" style="display:flex;gap:8px;align-items:center;">
+                                    <input id="backgroundImageUrl" type="text" class="text-input" placeholder="URL immagine..." style="flex:1;" />
+                                    <input id="backgroundImageFile" type="file" accept="image/*" />
+                                </div>
+
+                                <div id="backgroundPreview" class="background-preview" style="margin-top:8px;">
+                                    <img id="backgroundPreviewImg" src="" alt="" style="max-width:100%;height:auto;display:none;border:1px solid #ddd;padding:4px;" />
+                                </div>
+
+                                <div class="settings-actions" style="margin-top:10px;">
+                                    <button id="saveGeneralSettings" class="btn btn-save" data-translate="save">Salva</button>
+                                    <button id="cancelGeneralSettings" class="btn btn-cancel" data-translate="cancel">Annulla</button>
+                                </div>
+                            </div>
                         </div>
                         <!-- Panel 3 -->
-                        <div class="config-subpanel" id="panel-3">
-                            <h2 data-translate="subpanel_3_title">Sistema</h2>
+                        <div class="config-subpanel" id="system-settings-panel">
+                            <h2 data-translate="system_settings_title">System</h2>
                             <p>Contenuto pannello 3...</p>
                         </div>
                     </div>
@@ -53,13 +82,6 @@
 
     <button class="config-button" id="Config" aria-label="Config" title="Settings" data-translate-title="config_button">
         <img src="images/icons/settings.png" alt="Config" id="configIconImg" data-translate-alt="config_icon_alt">
-    </button>
-
-    <!-- Cash button on the left -->
-    <button class="cash-button" id="Cash" aria-label="Cassa" title="Cassa" data-translate-title="cash_button">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28" class="cash-icon-svg">
-            <path d="M19 6h-2V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v3H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM9 4h6v2H9V4zm10 16H5V8h14v12zm-8-3H7v-2h4v2zm6 0h-4v-2h4v2zm-6-4H7v-2h4v2zm6 0h-4v-2h4v2z"/>
-        </svg>
     </button>
 
     <!-- Cash Drawer Panel (Transparency/Glassmorphism) -->
@@ -175,3 +197,4 @@
     <script src="scripts/script.js"></script>
     <script src="scripts/translate.js"></script>
 </body>
+</html>

@@ -165,4 +165,40 @@
     line-height: 1.5;
 }
 
+/* Layout a righe/colonne: i blocchi si dispongono in orizzontale e vanno a capo quando non entrano */
+#gamingBlocks {
+    display: flex;
+    flex-wrap: wrap;
+    /* centra gli elementi sulla riga e centra le righe quando c'è spazio verticale */
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    gap: 10px; /* corrisponde a BLOCK_MARGIN (adjust se necessario) */
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+/* Ogni block mantiene le dimensioni calcolate via JS e non si espande */
+.block_station {
+    flex: 0 0 auto; /* non cresce né si restringe: usa width/height impostati in JS */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+    box-sizing: border-box;
+}
+
+/* Assicura che il nome stazione resti visibile sopra gli altri elementi */
+.block_station .station-name {
+    z-index: 2;
+}
+
+/* Piccola ottimizzazione responsive: riduci gap su schermi stretti */
+@media (max-width: 480px) {
+    #gamingBlocks {
+        gap: 6px;
+    }
+}
+
 /* Made with Bob */

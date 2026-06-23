@@ -249,8 +249,8 @@ async function sendGameStationAction(stationId, action) {
 
 // Function to update a single block's status
 async function updateSingleBlockStatus(stationId) {
-    const container = document.getElementById('containerGamingStation');
-    const block = container.querySelector(`[data-station-id="${stationId}"]`);
+    const blocksContainer = document.getElementById('gamingBlocks');
+    const block = blocksContainer.querySelector(`[data-station-id="${stationId}"]`);
 
     if (!block) {
         console.error(`Block with station ID ${stationId} not found`);
@@ -324,9 +324,8 @@ async function generateGamingBlocks() {
     /* Number of blocks depends on number of gaming station using API*/
     const gameStationIDList = await getGameStationIDList();
     const numBlocksInput = parseInt(gameStationIDList.length);
-    const container = document.getElementById('containerGamingStation');
-
-    container.innerHTML = '';
+    const blocksContainer = document.getElementById('gamingBlocks');
+    blocksContainer.innerHTML = '';
 
     // Calculate grid to fit all blocks as squares
     const cols = Math.ceil(Math.sqrt(numBlocksInput));
@@ -416,15 +415,14 @@ async function generateGamingBlocks() {
         // Translate consumption icon tooltip after adding to DOM
         translateConsumptionTooltip(consumptionIcon);
 
-        container.appendChild(block);
+        blocksContainer.appendChild(block);
     }
 }
 
-// Function to update only the status of existing blocks
 async function updateBlockStationStatus() {
     const gameStationIDList = await getGameStationIDList();
-    const container = document.getElementById('containerGamingStation');
-    const blocks = container.querySelectorAll('.block_station');
+    const blocksContainer = document.getElementById('gamingBlocks');
+    const blocks = blocksContainer.querySelectorAll('.block_station');
 
     // Fetch status and cost for all game stations in parallel using the status API
     // Bypass cache for periodic updates to ensure fresh data

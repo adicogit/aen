@@ -97,6 +97,7 @@ body {
     transition: opacity 0s 0.3s;
     /* Wait 0.3s (half of 0.6s flip) then change opacity instantly */
     opacity: 1;
+    position: relative;
 }
 
 #container.flipped #containerGamingStation {
@@ -623,4 +624,55 @@ main {
     display: flex;
     gap: 8px;
     flex-shrink: 0;
+}
+
+/* Assicura che il flipper e l'area gaming non ritaglino elementi assoluti */
+#container .flipper {
+    position: relative; /* se non già presente */
+    overflow: visible;  /* permetti elementi assoluti fuori dalle dimensioni del pannello */
+}
+
+/* L'area gaming deve poter contenere elementi posizionati assolutamente */
+#containerGamingStation {
+    position: relative;  /* mantiene il pulsante all'interno del contesto del pannello */
+    overflow: visible;   /* evita che il pulsante venga nascosto/ritagliato */
+    z-index: 2;
+}
+
+/* Stili per il pulsante Cassa: rimane visibile e segue la rotazione del flipper */
+.cash-button#Cash {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    z-index: 99999;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    padding: 6px;
+}
+
+/* Icona dentro il pulsante */
+.cash-button#Cash .cash-icon-svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+/* Hover / active states */
+.cash-button#Cash:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+}
+
+.cash-button#Cash:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.10);
 }
