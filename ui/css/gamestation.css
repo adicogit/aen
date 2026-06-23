@@ -1,6 +1,6 @@
 /* Game Station Styles */
 .block_station {
-    /* Le dimensioni verranno impostate da JavaScript */
+    /* Sizes will be set by JavaScript */
     background-color: #007bff;
     background-image: url("../images/icons/billiard_logo_1.jpeg");
     border-radius: 15px;
@@ -165,23 +165,23 @@
     line-height: 1.5;
 }
 
-/* Layout a righe/colonne: i blocchi si dispongono in orizzontale e vanno a capo quando non entrano */
+/* Row/column layout: blocks flow horizontally and wrap to the next line when they don't fit */
 #gamingBlocks {
     display: flex;
     flex-wrap: wrap;
-    /* centra gli elementi sulla riga e centra le righe quando c'è spazio verticale */
+    /* center items on the row and center rows when there's vertical space */
     justify-content: center;
     align-items: center;
     align-content: center;
-    gap: 10px; /* corrisponde a BLOCK_MARGIN (adjust se necessario) */
+    gap: 10px; /* corresponds to BLOCK_MARGIN (adjust if needed) */
     width: 100%;
     box-sizing: border-box;
     overflow: visible;
 }
 
-/* Ogni block mantiene le dimensioni calcolate via JS e non si espande */
+/* Each block keeps the size calculated by JS and does not grow */
 .block_station {
-    flex: 0 0 auto; /* non cresce né si restringe: usa width/height impostati in JS */
+    flex: 0 0 auto; /* do not grow or shrink: use width/height set by JS */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -189,16 +189,14 @@
     box-sizing: border-box;
 }
 
-/* Assicura che il nome stazione resti visibile sopra gli altri elementi */
+/* Ensure the station name stays visible above other elements */
 .block_station .station-name {
     z-index: 2;
 }
 
-/* Piccola ottimizzazione responsive: riduci gap su schermi stretti */
+/* Small responsive optimization: reduce gap on narrow screens */
 @media (max-width: 480px) {
     #gamingBlocks {
         gap: 6px;
     }
 }
-
-/* Made with Bob */
