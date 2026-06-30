@@ -18,7 +18,8 @@
 }
 
 .modal-content {
-    background-color: #fff;
+    background-color: var(--bg-modal-content);
+    color: var(--text-primary);
     border-radius: 10px;
     width: 90%;
     max-width: 900px;
@@ -43,14 +44,14 @@
 
 .modal-header {
     padding: 20px;
-    border-bottom: 2px solid #ddd;
-    background-color: #f8f9fa;
+    border-bottom: 2px solid var(--border-color);
+    background-color: var(--bg-modal-header-footer);
     border-radius: 10px 10px 0 0;
 }
 
 .modal-header h2 {
     margin: 0;
-    color: #333;
+    color: var(--text-primary);
     font-size: 24px;
 }
 
@@ -72,9 +73,11 @@
 .search-field {
     width: 100%;
     padding: 12px 15px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--border-color);
     border-radius: 5px;
     font-size: 16px;
+    background-color: var(--bg-item);
+    color: var(--text-primary);
     transition: border-color 0.3s;
 }
 
@@ -86,17 +89,17 @@
 .consumption-list {
     flex: 1;
     overflow-y: auto;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 5px;
     padding: 10px;
-    background-color: #f9f9f9;
+    background-color: var(--bg-list);
 }
 
 .consumption-item {
     padding: 12px 15px;
     margin-bottom: 8px;
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
+    background-color: var(--bg-item);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
     cursor: pointer;
     transition: all 0.2s;
@@ -106,14 +109,14 @@
 }
 
 .consumption-item:hover {
-    background-color: #e3f2fd;
+    background-color: rgba(0, 123, 255, 0.1);
     border-color: #007bff;
     transform: translateX(5px);
 }
 
 .consumption-item-name {
     font-weight: 500;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .consumption-item-price {
@@ -125,13 +128,13 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    border-left: 2px solid #ddd;
+    border-left: 2px solid var(--border-color);
     padding-left: 20px;
 }
 
 .modal-side-panel h3 {
     margin: 0 0 15px 0;
-    color: #333;
+    color: var(--text-primary);
     font-size: 18px;
 }
 
@@ -139,16 +142,16 @@
     flex: 1;
     overflow-y: auto;
     padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    background-color: var(--bg-list);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
 }
 
 .selected-item {
     padding: 10px;
     margin-bottom: 8px;
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
+    background-color: var(--bg-item);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
     display: flex;
     justify-content: space-between;
@@ -173,12 +176,12 @@
 
 .selected-item-name {
     font-weight: 500;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 4px;
 }
 
 .selected-item-price {
-    color: #666;
+    color: var(--text-secondary);
     font-size: 14px;
 }
 
@@ -206,11 +209,11 @@
 
 .modal-footer {
     padding: 20px;
-    border-top: 2px solid #ddd;
+    border-top: 2px solid var(--border-color);
     display: flex;
     justify-content: flex-end;
     gap: 15px;
-    background-color: #f8f9fa;
+    background-color: var(--bg-modal-header-footer);
     border-radius: 0 0 10px 10px;
 }
 

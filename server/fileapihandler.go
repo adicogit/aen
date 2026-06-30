@@ -10,6 +10,8 @@ import (
 
 type uiConfig struct {
 	Background_image string `json:"background_image,omitempty"`
+	Theme            string `json:"theme,omitempty"`
+	BilliardRoomName string `json:"billiard_room_name,omitempty"`
 }
 
 // return the Web UI configuration
@@ -18,6 +20,8 @@ func (server *Server) getUIConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	result := uiConfig{
 		Background_image: config.UIConfig.UIAspect.BackgroundImage,
+		Theme:            config.UIConfig.UIAspect.Theme,
+		BilliardRoomName: config.UIConfig.UIAspect.BilliardRoomName,
 	}
 
 	log.Log.Debug("Exiting getBilliardManagerProperties", "result", result)
@@ -36,6 +40,8 @@ func (server *Server) setUIConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	config.UIConfig.UIAspect.BackgroundImage = requestData.Background_image
+	config.UIConfig.UIAspect.Theme = requestData.Theme
+	config.UIConfig.UIAspect.BilliardRoomName = requestData.BilliardRoomName
 	err = config.UIConfig.SaveConfig()
 	if err != nil {
 		log.Log.Error("Unable save UI configuration", "error", err)
