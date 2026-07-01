@@ -1,3 +1,4 @@
 config/config.yml
 __debug_bin*
 .DS_Store
+db/billiadRoom*
