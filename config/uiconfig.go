@@ -8,9 +8,10 @@ import (
 )
 
 type uiAspect struct {
-	BackgroundImage  string `yaml:"background_image,omitempty"`
-	Theme            string `yaml:"theme,omitempty"`
-	BilliardRoomName string `yaml:"billiard_room_name,omitempty"`
+	BackgroundImageFolder string `yaml:"background_image_folder,omitempty"`
+	BackgroundImage       string `yaml:"background_image,omitempty"`
+	Theme                 string `yaml:"theme,omitempty"`
+	BilliardRoomName      string `yaml:"billiard_room_name,omitempty"`
 }
 
 type uiConfig struct {

@@ -9,9 +9,10 @@ import (
 )
 
 type uiConfig struct {
-	Background_image string `json:"background_image,omitempty"`
-	Theme            string `json:"theme,omitempty"`
-	BilliardRoomName string `json:"billiard_room_name,omitempty"`
+	Background_image_folder string `json:"background_image_folder,omitempty"`
+	Background_image        string `json:"background_image,omitempty"`
+	Theme                   string `json:"theme,omitempty"`
+	BilliardRoomName        string `json:"billiard_room_name,omitempty"`
 }
 
 // return the Web UI configuration
@@ -19,9 +20,10 @@ func (server *Server) getUIConfig(w http.ResponseWriter, r *http.Request) {
 	log.Log.Debug("Entering getBilliardManagerProperties")
 	w.Header().Set("Content-Type", "application/json")
 	result := uiConfig{
-		Background_image: config.UIConfig.UIAspect.BackgroundImage,
-		Theme:            config.UIConfig.UIAspect.Theme,
-		BilliardRoomName: config.UIConfig.UIAspect.BilliardRoomName,
+		Background_image_folder: config.UIConfig.UIAspect.BackgroundImageFolder,
+		Background_image:        config.UIConfig.UIAspect.BackgroundImage,
+		Theme:                   config.UIConfig.UIAspect.Theme,
+		BilliardRoomName:        config.UIConfig.UIAspect.BilliardRoomName,
 	}
 
 	log.Log.Debug("Exiting getBilliardManagerProperties", "result", result)
@@ -39,6 +41,7 @@ func (server *Server) setUIConfig(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	config.UIConfig.UIAspect.BackgroundImageFolder = requestData.Background_image_folder
 	config.UIConfig.UIAspect.BackgroundImage = requestData.Background_image
 	config.UIConfig.UIAspect.Theme = requestData.Theme
 	config.UIConfig.UIAspect.BilliardRoomName = requestData.BilliardRoomName

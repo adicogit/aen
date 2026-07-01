@@ -28,7 +28,8 @@ async function fetchGeneralSettings() {
         const data = await response.json();
         
         currentGeneralSettings = {
-            background_image: data.background_image || '/images/background/background.webp',
+            background_image_folder: data.background_image_folder || '/images/background',
+            background_image: data.background_image || 'background.webp',
             theme: data.theme || 'light',
             billiard_room_name: data.billiard_room_name || ''
         };
@@ -45,7 +46,7 @@ async function fetchGeneralSettings() {
         }
         
         // Preview background
-        updateBackgroundPreview(currentGeneralSettings.background_image);
+        updateBackgroundPreview(currentGeneralSettings.background_image_folder, currentGeneralSettings.background_image);
         
         // Update radio select
         const radios = document.getElementsByName('uiTheme');
@@ -91,8 +92,9 @@ function updateThemeCardSelection(selectedTheme) {
     }
 }
 
-function updateBackgroundPreview(url) {
+function updateBackgroundPreview(path, fileName) {
     const previewImg = document.getElementById('backgroundPreviewImg');
+    const url = path && fileName ? `${path}/${fileName}` : '';
     if (previewImg) {
         if (url) {
             previewImg.src = url;

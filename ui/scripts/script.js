@@ -30,7 +30,10 @@ async function setbackgroundImage() {
         const data = await response.json();
 
         // Get background path from received json
-        const imageUrl = data.background_image;
+        const imagePath = data.background_image_folder;
+        const imageName = data.background_image;
+        const imageUrl = imagePath && imageName ? `${imagePath}/${imageName}` : null;
+
         const theme = data.theme || 'light';
 
         // Apply theme
