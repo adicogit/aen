@@ -55,7 +55,25 @@
                                     <img id="backgroundPreviewImg" src="" alt="" style="max-width:100%;height:auto;display:none;border:1px solid #ddd;padding:4px;" />
                                 </div>
 
-                                <div class="settings-actions" style="margin-top:10px;">
+                                <label data-translate="theme_label" style="display:block;margin-top:15px;">Profilo Tema</label>
+                                <div class="theme-selection">
+                                    <label class="theme-card" id="theme-light-card">
+                                        <input type="radio" name="uiTheme" value="light" checked>
+                                        <svg viewBox="0 0 24 24" class="theme-icon">
+                                            <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 0 0 0-1.41l-1.06-1.06zm-1.06-10.9a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.01a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.02.39 1.41 0l1.06-1.06z"/>
+                                        </svg>
+                                        <span data-translate="theme_light">Chiaro</span>
+                                    </label>
+                                    <label class="theme-card" id="theme-dark-card">
+                                        <input type="radio" name="uiTheme" value="dark">
+                                        <svg viewBox="0 0 24 24" class="theme-icon">
+                                            <path d="M12.3 2a10 10 0 0 0-1.9 19.5 10 10 0 0 0 11.2-12.7 1 1 0 0 0-1.2-.7 1 1 0 0 0-.8.8 8 8 0 1 1-8.5-8.5 1 1 0 0 0 .8-.8 1 1 0 0 0-.6-1.1c-.3-.1-.7-.1-1-.1z"/>
+                                        </svg>
+                                        <span data-translate="theme_dark">Scuro</span>
+                                    </label>
+                                </div>
+
+                                <div class="settings-actions" style="margin-top:15px;">
                                     <button id="saveGeneralSettings" class="btn btn-save" data-translate="save">Salva</button>
                                     <button id="cancelGeneralSettings" class="btn btn-cancel" data-translate="cancel">Annulla</button>
                                 </div>
@@ -192,6 +210,7 @@
     <script src="scripts/cashScript.js"></script>
     <script src="scripts/consumptionScript.js"></script>
     <script src="scripts/gamingStationScript.js"></script>
+    <script src="scripts/general-settings.js"></script>
     <script src="scripts/script.js"></script>
     <script src="scripts/translate.js"></script>
 </body>

@@ -1,2 +1,2 @@
-dbpath: "D:\\ApplicationEnv\\Projects\\aen\\db\\billiardRoom.db"
-#dbpath: "/Users/boss/Projects/aen/db/billiardRoom.db"
+#dbpath: "D:\\ApplicationEnv\\Projects\\aen\\db\\billiardRoom.db"
+dbpath: "/Users/boss/Projects/aen/db/billiardRoom.db"

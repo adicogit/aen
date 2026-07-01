@@ -31,6 +31,16 @@ async function setbackgroundImage() {
 
         // Get background path from received json
         const imageUrl = data.background_image;
+        const theme = data.theme || 'light';
+
+        // Apply theme
+        if (theme === 'dark') {
+            document.body.classList.remove('theme-light');
+            document.body.classList.add('theme-dark');
+        } else {
+            document.body.classList.remove('theme-dark');
+            document.body.classList.add('theme-light');
+        }
 
         if (imageUrl) {
             // Validate imageUrl format before using
@@ -48,8 +58,9 @@ async function setbackgroundImage() {
         }
 
     } catch (error) {
-        console.error("ERROR in loading background image:", error);
-        // Use default image
+        console.error("ERROR in loading background image/theme:", error);
+        // Use default image and light theme
+        document.body.classList.add('theme-light');
         document.body.style.backgroundColor = `url('/images/background/background.webp')`;
     }
 }

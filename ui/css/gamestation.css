@@ -32,7 +32,8 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 5;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--bg-station-name);
+    color: var(--text-station-name);
     padding: 5px 10px;
     border-radius: 5px;
     text-align: center;
@@ -56,8 +57,9 @@
 .block_station_price {
     flex-grow: 0;
     height: calc(25% - 4px);
-    border-bottom: 1px solid #ccc;
-    background-color: rgba(240, 240, 240, 0.6);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-station-price);
+    color: var(--text-station-name);
     border-radius: 5px;
     display: flex;
     justify-content: center;
@@ -70,7 +72,7 @@
 .block_station_status {
     flex-grow: 0;
     height: calc(75% - 4px);
-    background-color: rgba(224, 224, 224, 0.6);
+    background-color: var(--bg-station-status);
     border-radius: 5px;
     display: flex;
     justify-content: center;
@@ -88,7 +90,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--bg-station-name);
     border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s;
@@ -96,7 +98,7 @@
 }
 
 .consumption-icon:hover {
-    background-color: rgba(255, 255, 255, 1);
+    background-color: var(--bg-item);
     transform: scale(1.1);
 }
 
@@ -107,7 +109,7 @@
 }
 
 .consumption-icon.disabled:hover {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--bg-station-name);
     transform: none;
 }
 
@@ -160,7 +162,7 @@
 
 .confirm-modal-body p {
     font-size: 18px;
-    color: #333;
+    color: var(--text-primary);
     margin: 0;
     line-height: 1.5;
 }

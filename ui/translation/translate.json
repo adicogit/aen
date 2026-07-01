@@ -47,7 +47,10 @@
     "select_accounting_day": "Seleziona Giorno Contabile",
     "change_accounting_day": "Cambia giorno contabile",
     "cancel": "Annulla",
-    "cash_no_accounting_day": "Nessun giorno contabile impostato. Imposta il giorno contabile dalla cassa."
+    "cash_no_accounting_day": "Nessun giorno contabile impostato. Imposta il giorno contabile dalla cassa.",
+    "theme_label": "Profilo Tema",
+    "theme_light": "Chiaro",
+    "theme_dark": "Scuro"
   },
   "en": {
     "welcome_title": "Billiard Manager",
@@ -97,6 +100,9 @@
     "select_accounting_day": "Select Accounting Day",
     "change_accounting_day": "Change accounting day",
     "cancel": "Cancel",
-    "cash_no_accounting_day": "No accounting day set. Please set it from the cash panel."
+    "cash_no_accounting_day": "No accounting day set. Please set it from the cash panel.",
+    "theme_label": "Theme Profile",
+    "theme_light": "Light",
+    "theme_dark": "Dark"
   }
 }
