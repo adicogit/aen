@@ -4,6 +4,6 @@ websiteDir: "D:\\ApplicationEnv\\Projects\\aen\\ui"
 log_level: "debug"
 ui_aspect:
    background_image_folder: "/images/background"
-   background_image: "background.webp"
+   background_image: "background.jfif"
    theme: "dark"
    billiard_room_name: "Billiard Room bla bla"
