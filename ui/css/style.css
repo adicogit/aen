@@ -299,7 +299,10 @@ main {
     flex-grow: 1;
     width: 100%;
     position: relative;
-    overflow: hidden;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
     /* Hide non-active panels */
     display: flex;
     /* Use flexbox to center content */
@@ -319,6 +322,9 @@ main {
 .config-subpanel.active {
     display: block;
     /* Show if active */
+
+    max-height: 100%;
+    overflow-y: auto;
 }
 
 @keyframes fadeIn {

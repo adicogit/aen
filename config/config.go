@@ -75,7 +75,7 @@ func saveConfig(configPath string, config Config) error {
 	s, err := os.Stat(configPath)
 	if err == nil && !s.IsDir() {
 		// Open config file
-		file, err := os.Open(configPath)
+		file, err := os.OpenFile(configPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		if err == nil {
 			defer file.Close()
 
