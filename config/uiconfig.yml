@@ -2,6 +2,7 @@ portNumber: 4000
 websiteDir: D:\ApplicationEnv\Projects\aen\ui
 log_level: debug
 ui_aspect:
+  background_image_folder: /images/background
   background_image: background.jfif
   theme: light
   billiard_room_name: Billiard Room bla bla

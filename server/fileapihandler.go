@@ -41,10 +41,18 @@ func (server *Server) setUIConfig(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	config.UIConfig.UIAspect.BackgroundImageFolder = requestData.Background_image_folder
-	config.UIConfig.UIAspect.BackgroundImage = requestData.Background_image
-	config.UIConfig.UIAspect.Theme = requestData.Theme
-	config.UIConfig.UIAspect.BilliardRoomName = requestData.BilliardRoomName
+	if len(requestData.Background_image_folder) > 0 {
+		config.UIConfig.UIAspect.BackgroundImageFolder = requestData.Background_image_folder
+	}
+	if len(requestData.Background_image) > 0 {
+		config.UIConfig.UIAspect.BackgroundImage = requestData.Background_image
+	}
+	if len(requestData.Theme) > 0 {
+		config.UIConfig.UIAspect.Theme = requestData.Theme
+	}
+	if len(requestData.BilliardRoomName) > 0 {
+		config.UIConfig.UIAspect.BilliardRoomName = requestData.BilliardRoomName
+	}
 	err = config.UIConfig.SaveConfig()
 	if err != nil {
 		log.Log.Error("Unable save UI configuration", "error", err)
