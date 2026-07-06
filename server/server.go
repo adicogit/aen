@@ -52,6 +52,7 @@ func (server *Server) Start() error {
 	// API to handle UI configuration
 	router.HandleFunc("/api/v1/uiconfig", server.getUIConfig).Methods("GET")
 	router.HandleFunc("/api/v1/uiconfig", server.setUIConfig).Methods("PUT")
+	router.HandleFunc("/api/v1/backgrounds", server.listBackgrounds).Methods("GET")
 
 	// API to handle game stations
 	router.HandleFunc("/api/v1/gamestations", server.getGameStations).Methods("GET")

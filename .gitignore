@@ -1,6 +1,7 @@
 config/config.yml
 __debug_bin*
 .DS_Store
-db/billiadRoom*
 ./main
 ./poolmanager*
+db/billiardRoom.db
+db/billiardRoom.db

@@ -43,7 +43,7 @@
                                 <label for="backgroundImageUrl" data-translate="background_image_label">Background image</label>
                                 <div class="background-input-row" style="display:flex;gap:8px;align-items:center;">
                                     <input id="backgroundImageUrl" type="text" class="text-input" placeholder="URL immagine..." style="flex:1;" />
-                                    <input id="backgroundImageFile" type="file" accept="image/*" />
+                                    <button id="backgroundChooseBtn" class="btn">scegli</button>
                                 </div>
 
                                 <div id="backgroundPreview" class="background-preview" style="margin-top:8px;">
@@ -202,6 +202,23 @@
             </div>
             <div class="modal-footer">
                 <button id="errorOk" class="btn btn-save" data-translate="ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Images Modal -->
+    <div id="backgroundModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Scegli Background</h2>
+            </div>
+            <div class="modal-body">
+                <div id="backgroundList" class="background-list" style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <!-- Thumbnails will be injected here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeBackgroundModal" class="btn btn-cancel">Annulla</button>
             </div>
         </div>
     </div>

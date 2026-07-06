@@ -150,18 +150,71 @@ function setupGeneralSettingsListeners() {
         });
     }
 
-    // Handle file upload for background
-    const fileInput = document.getElementById('backgroundImageFile');
+    // Background chooser modal logic
     const urlInput = document.getElementById('backgroundImageUrl');
-    
-    if (fileInput && urlInput) {
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const fakePath = `/images/background/${file.name}`;
-                urlInput.value = fakePath;
-                updateBackgroundPreview(fakePath);
-            }
+    const chooseBtn = document.getElementById('backgroundChooseBtn');
+    const bgModal = document.getElementById('backgroundModal');
+    const bgList = document.getElementById('backgroundList');
+    const closeBgModal = document.getElementById('closeBackgroundModal');
+
+    async function loadBackgroundImages() {
+        try {
+            const resp = await fetch('/api/v1/backgrounds');
+            if (!resp.ok) throw new Error('Failed to load backgrounds');
+            const files = await resp.json();
+            // Clear
+            bgList.innerHTML = '';
+            files.forEach(file => {
+                const thumbWrap = document.createElement('div');
+                thumbWrap.style.width = '120px';
+                thumbWrap.style.cursor = 'pointer';
+                thumbWrap.style.textAlign = 'center';
+
+                const img = document.createElement('img');
+                img.src = `${currentGeneralSettings.background_image_folder}/${file}`;
+                img.alt = file;
+                img.style.maxWidth = '100%';
+                img.style.height = '80px';
+                img.style.objectFit = 'cover';
+                img.style.border = '1px solid #ddd';
+                img.style.padding = '4px';
+
+                const label = document.createElement('div');
+                label.textContent = file;
+                label.style.fontSize = '12px';
+                label.style.marginTop = '4px';
+
+                thumbWrap.appendChild(img);
+                thumbWrap.appendChild(label);
+
+                thumbWrap.addEventListener('click', () => {
+                    // set only filename in the input
+                    if (urlInput) urlInput.value = file;
+                    // update preview using folder + filename
+                    updateBackgroundPreview(currentGeneralSettings.background_image_folder, file);
+                    // close modal
+                    if (bgModal) bgModal.classList.remove('show');
+                });
+
+                bgList.appendChild(thumbWrap);
+            });
+        } catch (err) {
+            console.error('Unable to load background images', err);
+        }
+    }
+
+    if (chooseBtn && bgModal && bgList) {
+        chooseBtn.addEventListener('click', async () => {
+            // ensure we have the latest folder value
+            await fetchGeneralSettings();
+            await loadBackgroundImages();
+            bgModal.classList.add('show');
+        });
+    }
+
+    if (closeBgModal && bgModal) {
+        closeBgModal.addEventListener('click', () => {
+            bgModal.classList.remove('show');
         });
     }
     
@@ -195,14 +248,19 @@ function setupGeneralSettingsListeners() {
                 
                 // Set body background image immediately if it's correct
                 if (bgUrl) {
-                    // Validate basic image path structure (mirroring script.js safety check)
-                    if (/^[a-zA-Z0-9\/._-]+$/.test(bgUrl)) {
-                        document.body.style.backgroundImage = `url('${bgUrl}')`;
+                    // build full path if user provided only filename
+                    const bgPath = bgUrl.includes('/') ? bgUrl : `${currentGeneralSettings.background_image_folder}/${bgUrl}`;
+                    if (/^[a-zA-Z0-9\/._-]+$/.test(bgPath)) {
+                        document.body.style.backgroundImage = `url('${bgPath}')`;
                     }
                 }
-                
-                // Update cached settings
-                currentGeneralSettings = payload;
+
+                // Update cached settings (preserve folder)
+                currentGeneralSettings = Object.assign({}, currentGeneralSettings, {
+                    background_image: bgUrl,
+                    theme: selectedTheme,
+                    billiard_room_name: roomName
+                });
                 
                 // Go back to main panel (flip container back)
                 const container = document.getElementById('container');
@@ -228,7 +286,7 @@ function setupGeneralSettingsListeners() {
             // Restore from cached settings
             document.getElementById('billiardRoomName').value = currentGeneralSettings.billiard_room_name;
             document.getElementById('backgroundImageUrl').value = currentGeneralSettings.background_image;
-            updateBackgroundPreview(currentGeneralSettings.background_image);
+            updateBackgroundPreview(currentGeneralSettings.background_image_folder, currentGeneralSettings.background_image);
             
             const radios = document.getElementsByName('uiTheme');
             radios.forEach(radio => {
